@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Sample{% endblock %}
+{% block stylesheets %}
+<link type="text/css" href="/static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+{% endblock %}
+{% block javascripts %}
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript">
+$(function() {
+  $("#id_production_date").datepicker({dateFormat: 'yy-mm-dd'});
+  $("#id_date_added").datepicker({dateFormat: 'yy-mm-dd'});
+  $("#id_date_removed").datepicker({dateFormat: 'yy-mm-dd'});
+});
+</script>
+{% endblock %}
+
+{% block header %}Edit Sample{% endblock %}
+
+{% block content %}
+<form class="form-horizontal" method="post" 
+      action={% url freezers.views.edit_sample sid %}>
+  {% csrf_token %}
+  <fieldset>
+    {% for field in form %}
+	    <div class="control-group">
+        {% if field.errors %}
+          <div class="alert alert-error">
+            {{ field.errors }}
+          </div>
+        {% endif %}
+        <label class="control-label" for="id_{{ field.name }}">
+          {{ field.label }} 
+        </label>
+        <div class="controls">
+          {{ field }}
+          <span class="help-inline">{{ field.help_text }}</span>
+        </div>
+      </div>
+    {% endfor %}
+    {% for mfield in msgform %}
+      <div class="control-group">
+        {% if mfield.errors %}
+          <div class="alert alert-error">    
+            {{ mfield.errors }}
+          </div>
+        {% endif %}
+        <label class="control-label" for="id_{{ field_name }}">
+          {{ mfield.label_tag }} 
+        </label>
+        <div class="controls">
+          {{ mfield }}
+          <span class="help-inline">{{ mfield.help_text }}</span>
+        </div>
+      </div>
+    {% endfor %}
+    <div class="controls">
+      <p>&#42; Required field</p>
+      <input class="btn btn-primary" type="submit" value="Save" />
+    </div>
+  </fieldset>
+</form>
+{% endblock %}

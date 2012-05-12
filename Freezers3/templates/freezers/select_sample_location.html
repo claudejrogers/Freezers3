@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Select Sample Location{% endblock %}
+
+{% block header %}Freezer {{ fname }}{% endblock %}
+
+{% block content %}
+
+<ul class="markless">
+  {% for s in shelves %}
+    <li>
+      <a href={% url freezers.views.add_samples_to_freezer freezer_id=fid shelf_id=s.location_id %}
+         title="Click here to place samples in the first available location of Shelf {{ s.location_id }}">
+        Shelf {{ s.location_id }}
+      </a>
+      (<a href={% url freezers.views.sample_index_by_location freezer_id=fid shelf_id=s.location_id %}
+          title="Click here to view the samples in Shelf {{ s.location_id }}">view</a>)
+      <ul class="rack">
+        {% for r in s.sublocation_list %}
+        <li>
+          <a href={% url freezers.views.add_samples_to_freezer freezer_id=fid shelf_id=s.location_id rack_id=r.location_id %}
+             title="Click here to place samples in the first available location of Shelf {{ s.location_id }} Rack {{ r.location_id }}">
+            Rack {{ r.location_id }}
+          </a>
+          (<a href={% url freezers.views.sample_index_by_location freezer_id=fid shelf_id=s.location_id rack_id=r.location_id %}
+              title="Click here to view the samples in Shelf {{ s.location_id }} Rack {{ r.location_id }}">view</a>)
+          <ul class="drawer">
+            {% for d in r.sublocation_list %}
+              <li>
+                <a href={% url freezers.views.add_samples_to_freezer freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id %}
+                   title="Click here to place samples in the first available location of Shelf {{ s.location_id }} Rack {{ r.location_id }} Drawer {{ d.location_id }}">
+                  Drawer {{ d.location_id }}
+                </a>
+                (<a href={% url freezers.views.sample_index_by_location freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id %}
+                    title="Click here to view samples in Shelf {{ s.location_id }} Racks {{ r.location_id }} Drawer {{ d.location_id }}">view</a>)
+                <ul>
+                  {% for b in d.sublocation_list %}
+                  <li>
+                    <a href={% url freezers.views.select_box_location freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id box_id=b.location_id %}
+                       title="Click here to view samples in Shelf {{ s.location_id }} Rack {{ r.location_id }} Drawer {{ d.location_id }} Box {{ b.location_id }} and to add samples to a specific location in the box">
+                      {% if b.sublocation_list %}
+                        {{ b.location_id }}: {{ b.sublocation_list }}
+                      {% else %}
+                        Box {{ b.location_id }}
+                      {% endif %}
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
+
+

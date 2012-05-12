@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Removed Sample Information{% endblock %}
+
+{% block header %}Sample: {{ s.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span12">
+    <h2>Options</h2>
+    <a class="btn"
+      href={% url freezers.views.return_removed_sample s.id %}
+      title="Move sample">
+      <i class="icon-share"></i>
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Sample Details</h2>
+    <dl class="dl-horizontal">
+        <dt>Sample</dt>
+        <dd>{{ s.name }}</dd>
+        <dt>Location</dt>
+        <dd>{{ s }}</dd>
+        <dt>Aliquot</dt>
+        <dd>
+          {% if s.aliquot_number %}
+            {{ s.aliquot_number }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Solvent</dt>
+        <dd>
+          {% if s.solvent %}
+            {{ s.solvent }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Sample Type</dt>
+        <dd>{{ s.sample_type }}</dd>
+        <dt>Species</dt>
+        <dd>
+          {% if s.species %}
+            {{ s.species }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Host Cell</dt>
+        <dd>
+          {% if s.host_cell_name %}
+            {{ s.host_cell_name }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>User</dt>
+        <dd>{{ s.user.get_full_name }}</dd>
+        <dt>PI/Lab/Supplier</dt>
+        <dd>
+          <a href={% url freezers.views.supplier_detail s.pi_lab_supplier.id %}
+            title="Click to view/edit supplier details">
+            {{ s.pi_lab_supplier }}
+          </a>
+        </dd>
+        <dt>Catalog Number</dt>
+        <dd>
+          {% if s.catalog_number %}
+            {{ s.catalog_number }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Date Added</dt>
+        <dd>{{ s.date_added|date:"SHORT_DATE_FORMAT" }}</dd>
+        <dt>Date Removed</dt>
+        <dd>
+          {% if s.date_removed %}
+            {{ s.date_removed|date:"SHORT_DATE_FORMAT" }}
+          {% else %}
+            NA
+          {% endif %}
+        </dd>
+        <dt>Date Produced</dt>
+        <dd>{{ s.production_date|date:"SHORT_DATE_FORMAT" }}</dd>
+        <dt>Concentration</dt>
+        <dd>
+          {{ s.concentration }}  
+          {% if "cell" in s.sample_type|lower %}
+            10^6 cells/ml
+          {% else %}
+            &mu;g/&mu;l
+          {% endif %}
+        </dd>
+        <dt>Volume</dt>
+        <dd>{{ s.volume }} &mu;l</dd>
+        <dt>Comments</dt>
+        <dd>
+          {% if s.coments %}
+            {{ s.comments }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}
+

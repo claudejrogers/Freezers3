@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Freezer Information{% endblock %}
+
+{% block header %}
+Freezer: {{ f.manufacturer }} {{ f.model }} {{ f.get_kind_display }}
+{% endblock %}
+
+{% block content %}
+  <h2>Location</h2>
+  <dl class="dl-horizontal">
+    <dt>Building &amp; Room</dt>
+    <dd>{{ f.building_room_number }}</dd>
+  </dl>
+  <h2>Service Information</h2>
+  <dl class="dl-horizontal">
+    <dt>Product Number</dt>
+    <dd>
+      {% if f.product_number %}
+        {{ f.product_number }}
+      {% else %}
+        Not provided
+      {% endif %}
+    </dd>
+    <dt>Serial Number</dt>
+    <dd>
+      {% if f.serial_number %}
+        {{ f.serial_number }}
+      {% else %}
+        Not provided
+      {% endif %}
+    </dd>
+    <dt>Service Phone</dt>
+    <dd>
+      {% if f.phone_number %}
+        {{ f.phone_number }}
+      {% else %}
+        Not provided
+      {% endif %}
+    </dd>
+  </dl>
+  <h2>Current Layout</h2>
+  <dl class="dl-horizontal">
+    <dt>Number of shelfs</dt>
+    <dd>{{ f.shelf_capacity }}/freezer</dd>
+    <dt>Number of racks</dt>
+    <dd>{{ f.rack_capacity }}/shelf</dd>
+    <dt>Number of drawers</dt>
+    <dd>{{ f.drawer_capacity }}/rack</dd>
+    <dt>Number of boxes</dt>
+    <dd>{{ f.box_capacity }}/drawer</dd>
+    <dt>Number of cells</dt>
+    <dd>{{ f.cell_capacity }}/box</dd>
+  </dl>
+  <p>
+    <a href={% url freezers.views.edit_freezer f.id %}>
+      Edit Freezer Information
+    </a>
+  </p>
+  <p>
+    <a href="/freezers/{{ f.id }}/select-region-to-edit/">
+      Change Freezer Subsection Layout
+    </a>
+  </p>
+{% endblock %}

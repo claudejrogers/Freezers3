@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Select Region To Edit{% endblock %}
+
+{% block header %}Edit Layout for: Freezer {{ fname }}{% endblock %}
+
+{% block content %}
+<p id="box-help-text" class="round">
+  Select the parent level of region to edit.<br />
+  For example, select a shelf to edit all the drawers, racks, boxes, or cells
+  on that shelf.<br />
+  Select a rack to edit all the drawers, racks, boxes, or cells in that rack,
+  etc.<br />
+  To make changes to the entire freezer,
+  <a href={% url freezers.views.edit_freezer f.id %}>Click Here</a>.
+</p>
+
+<ul class="markless">
+  {% for s in shelves %}
+    <li>
+      <a href={% url freezers.views.remodel_freezer freezer_id=f.id shelf_id=s.location_id %}>Shelf {{ s.location_id }}</a>
+      <ul class="rack">
+        {% for r in s.sublocation_list %}
+        <li>
+          <a href={% url freezers.views.remodel_freezer freezer_id=f.id shelf_id=s.location_id rack_id=r.location_id %}>Rack {{ r.location_id }}</a>
+          <ul class="drawer">
+            {% for d in r.sublocation_list %}
+              <li>
+                <a href={% url freezers.views.remodel_freezer freezer_id=f.id shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id %}>
+                  Drawer {{ d.location_id }}
+                </a>
+                <ul>
+                  {% for b in d.sublocation_list %}
+                  <li>
+                    <a href={% url freezers.views.remodel_freezer freezer_id=f.id shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id box_id=b.location_id %}>
+                      {% if b.sublocation_list %}
+                        {{ b.location_id }}: {{ b.sublocation_list }}
+                      {% else %}
+                        Box {{ b.location_id }}
+                      {% endif %}
+                    </a>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </li>
+            {% endfor %}
+          </ul>
+        </li>
+        {% endfor %}
+      </ul>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

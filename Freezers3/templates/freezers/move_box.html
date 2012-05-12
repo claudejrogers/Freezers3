@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Move Box{% endblock %}
+
+{% block header %}Move Box{% endblock %}
+
+{% block content %}
+<h2>Box: {{ origin }}{% if boxname %}: {{ boxname }}{% endif %}</h2>
+<div class="row">
+  <div class="span5">
+    <div id="boxDisplay" class="add-sample-form">
+      {% for rw in occupied %}
+        <div>
+          {% for col in rw %}
+            {% if col.is_occupied %}
+              <canvas id="canvas{{ col.index }}"
+                      title="Sample: {{ col.name }} aliquot {{ col.aliquot }} in cell {{ col.cell_location_name }}" height="30" width="30" class="{{ col.occupied_class }}"></canvas>
+            {% else %}
+              <canvas id="canvas{{ col.index }}" height="30" width="30"
+                      title="Empty"
+                      class="{{ col.occupied_class }}"></canvas>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="span7">
+    {% if msg %}
+      <p class="errorlist">{{ msg }}</p>
+    {% endif %}
+    <form class="form-horizontal" method="post" action={% url freezers.views.move_box_select_freezer fr sh ra dr bo %}>
+      {% csrf_token %}
+      <fieldset>
+        {% for field in form %}
+        <div class="control-group">
+          {% if field.errors %}
+            {{ field.errors }}
+          {% endif %}
+          <label class="control-label" for="id={{ field.name }}">
+            {{ field.label }}
+          </label>
+          <div class="controls">
+            {{ field }}
+            <span class="help-text">{{ field.help_text }}</span>
+          </div>
+        </div>
+        {% endfor %}
+        <div class="controls">
+          <p>&#42; Required field</p>
+          <input class="btn btn-primary" type="submit" value="Select" />
+        </div>
+      </fieldset>
+    </form>
+  </div>
+</div>
+{% if fid %}
+  <br />
+  <p>
+    Select a box location to sawp with {{ origin }}.<br />
+    If any samples are in the selected box, they will be moved to {{ origin }}.
+  </p>
+  <ul class="markless">
+    {% for s in shelves %}
+      <li>
+        Shelf {{ s.location_id }}
+        <ul class="rack">
+          {% for r in s.sublocation_list %}
+          <li>
+            Rack {{ r.location_id }}
+            <ul class="drawer">
+              {% for d in r.sublocation_list %}
+                <li>
+                  Drawer {{ d.location_id }}
+                  <ul>
+                    {% for b in d.sublocation_list %}
+                    <li>
+                      <a href={% url freezers.views.move_box box_address=bad freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id box_id=b.location_id %}
+                         title="Click here to move the box to Shelf {{ s.location_id }} Rack {{ r.location_id }} Drawer {{ d.location_id }} Box {{ b.location_id }}">
+                        {% if b.sublocation_list %}
+                          {{ b.location_id }}: {{ b.sublocation_list }}
+                        {% else %}
+                          Box {{ b.location_id }}
+                        {% endif %}
+                      </a>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<script src="/static/js/drawSampleLocations.js"></script>
+<script type="text/javascript">
+var slist = {{ slo }};
+var this_sample = {{ curr_samp }};
+drawSampleLocations(slist, this_sample);
+</script>
+{% endblock %}

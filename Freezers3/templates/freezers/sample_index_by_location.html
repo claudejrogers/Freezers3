@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Samples by Location{% endblock %}
+
+{% block header %}
+  <h1>
+    Samples: {{ freezer }}
+  </h1>
+{% endblock %}
+
+{% block content %}
+
+{% if freezer %}
+  {% if shelf %}
+    <h2>
+      Shelf {{ shelf }}
+      {% if rack %}
+        Rack {{ rack }}
+        {% if drawer %}
+          Drawer {{ drawer }}
+          {% if box %}
+            Box {{ box }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    </h2>
+  {% endif %}
+{% else %}
+  <h1>Samples</h1>
+{% endif %}
+{% if samples.object_list %}
+  {% if msg %}
+    <div class="alert alert-error">{{ msg }}</div>
+  {% endif %}
+  <form class="form-inline" method="post" action="{{ request.get_full_path }}">
+    {% csrf_token %}
+      <fieldset>
+        <div>
+          {% if form.search.errors %}
+            <div class="alert alert-error">
+              {{ form.search.errors }}
+            </div>
+          {% endif %}
+          {{ form.search }}
+          <button class="btn btn-primary" type="submit">
+            <i class="icon-search icon-white"></i>
+          </button>
+       </div>
+      </fieldset>
+  </form><br />
+  {% include "freezers/base_sample_table.html" with samples=samples %}
+  <script src="/static/js/drawSampleLocations.js"></script>
+  <script type="text/javascript">
+  $('.location').click(function() {
+    toggleLocation();
+    toggleTitle();
+  });
+  </script>
+{% else %}
+<p>No samples yet.</p>
+{% endif %}
+{% endblock %}

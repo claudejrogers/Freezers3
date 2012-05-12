@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Move Sample{% endblock %}
+
+{% block header %}Move Sample{% endblock %}
+
+{% block content %}
+<h2>Sample: {{ sample.name }} in {{ sample }}</h2>
+<div id="BoxDisplay">
+  {% for rw in display_list %}
+    <div>
+      {% for col in rw %}
+        <canvas id="canv{{ col.index }}" height="30" width="30"
+                {% if col.index > 1 %}class="hidden"{% endif %}
+                title="{{ col.text }}"></canvas>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+{% if msg %}
+  <p class="errorlist">{{ msg }}</p>
+{% endif %}
+<form class="form-horizontal" method="post" action={% url freezers.views.move_sample_select_freezer sid %}>
+  {% csrf_token %}
+  <fieldset>
+  {% for field in form %}
+    <div class="control-group">
+      {% if field.errors %}
+        {{ field.errors }}
+      {% endif %}
+      <label class="control-label" for="id_{{ field.name }}"> 
+        {{ field.label }} 
+      </label>
+      <div class="controls">
+        {{ field }}
+        <span class="help-text">{{ field.help_text }}</span>
+      </div>
+    </div>
+  {% endfor %}
+  <div class="controls">
+    <p>&#42; Required field</p>
+    <input class="btn btn-primary" type="submit" value="Select" />
+  </div>
+  </fieldset>
+</form>
+{% if fid %}
+  <br />
+  <p>
+    Select a location for your samples from the options below.
+    To move the sample to the first available position in the freezer,
+    <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid atoa=atoa %}
+       title="Click here to move samples to the first available location in this freezer">
+      Click here</a>.
+  </p>
+  <ul class="markless">
+    {% for s in shelves %}
+      <li>
+        <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid shelf_id=s.location_id atoa=atoa %}
+           title="Click here to move samples to the first available location of Shelf {{ s.location_id }}">
+          Shelf {{ s.location_id }}
+        </a>
+        <ul class="rack">
+          {% for r in s.sublocation_list %}
+          <li>
+            <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid shelf_id=s.location_id rack_id=r.location_id atoa=atoa %}
+               title="Click here to move samples to the first available location of Shelf {{ s.location_id }} Rack {{ r.location_id }}">
+              Rack {{ r.location_id }}
+            </a>
+            <ul class="drawer">
+              {% for d in r.sublocation_list %}
+                <li>
+                  <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id atoa=atoa %}
+                     title="Click here to move samples to the first available location of Shelf {{ s.location_id }} Rack {{ r.location_id }} Drawer {{ d.location_id }}">
+                    Drawer {{ d.location_id }}
+                  </a>
+                  <ul>
+                    {% for b in d.sublocation_list %}
+                    <li>
+                      <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid shelf_id=s.location_id rack_id=r.location_id drawer_id=d.location_id box_id=b.location_id atoa=atoa %}
+                         title="Click here to select a location within Shelf {{ s.location_id }} Rack {{ r.location_id }} Drawer {{ d.location_id }} Box {{ b.location_id }} to move samples">
+                        {% if b.sublocation_list %}
+                          {{ b.location_id }}: {{ b.sublocation_list }}
+                        {% else %}
+                          Box {{ b.location_id }}
+                        {% endif %}
+                      </a>
+                    </li>
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          </li>
+          {% endfor %}
+        </ul>
+      </li>
+    {% endfor %}
+  </ul>
+{% endif %}
+<script src="/static/js/drawSampleLocations.js"></script>
+<script type="text/javascript">
+drawAliquots({{ alonum }});
+$('.location').click(function() {
+  toggleLocation();
+  toggleTitle();
+});
+function toggleAliquots() {
+  console.log("toggle aliquots called")
+  if ($('#id_apply_to_aliquots').is(':checked')) {
+    $('.hidden').css({'visibility': 'visible', 'display': 'inline'});
+  } else {
+    $('.hidden').css({'visibility': 'hidden', 'display': 'none'});
+  }
+}
+toggleAliquots()
+$('#id_apply_to_aliquots').click(toggleAliquots);
+$('.markless a').click(function(e) {
+  console.log("called");
+  e.preventDefault();
+  var link = $(this).attr('href');
+  if ($('#id_apply_to_aliquots').is(':checked')) {
+    var new_link = link.replace('move/0/', 'move/1/');
+  } else {
+    var new_link = link.replace('move/1/', 'move/0/');
+  }
+  $(location).attr('href', new_link);
+});
+</script>
+{% endblock %}

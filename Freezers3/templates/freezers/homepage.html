@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block header %}Welcome {{ user.get_full_name }}{% endblock %}
+
+{% block content %}
+  <section id="user_samples">
+    <div class="page-header">
+      <h1>
+        Samples
+        <small>My samples and sample locations</small>
+      </h1>
+    </div>
+    <h2>My Sample Locations</h2>
+    <div class="row">
+      <div class="span8">
+      {% if locations %}
+        <table id="userboxes" class="table table-striped">
+          <thead>
+            <tr>
+              <th>Location</th>
+              <th>Name</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for l in locations %}
+            <tr>
+              <td class="loclink">
+                <a href={% url freezers.views.select_box_location l.fid l.sid l.rid l.did l.bid %}
+                   title="Click to view box contents">
+                  {{ l.location }}
+                </a>
+              </td>
+              <td class="boxname">
+                {% firstof l.name 'Click here to name this box' %}
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+        <script type="text/javascript">
+        $('.boxname').click(function() {
+        var $this = $(this);
+        var box_info = $(this).siblings().children('a').attr('href').split('/');
+        var fid = box_info[2];
+        var sid = box_info[3];
+        var rid = box_info[4];
+        var did = box_info[5];
+        var bid = box_info[6];
+        var addr = (parseInt(sid) << 24) + (parseInt(rid) << 16) + (parseInt(did) << 8) + parseInt(bid);
+        var curr_name = $(this).text().match(/Click here to name this box/) ? '' : $(this).text();
+        $(this).html('<form class="form-inline" id="#nameboxform" action="/freezers/'+fid+'/'+addr+'/name-box/"><input class="input-small" id="name_input" type="text" name="box_name" value="'+$.trim(curr_name)+'"/><input class="btn btn-primary" id="box_name" type="submit" value="Submit" /></form>');
+        $(this).unbind();
+        $('#name_input').focus();
+        $('#box_name:submit').click(function(event) {
+            event.preventDefault();
+            var bform = $(this).parent('form');
+            var actlink = bform.attr('action');
+            var name = bform.children(':text').val();
+            if (name.length > 20) {
+            return;
+            }
+            var link = actlink+'?box_name='+name.split(' ').join('+');
+            $.get(link, function(data) {
+            if (data.match(/success/)) {
+                $this.html(name);
+            }
+            });
+        });
+        });
+        </script>
+        {% else %}
+          <p>No Locations yet. Add samples
+            <a href={% url freezers.views.freezer_index %}>here</a>.
+          </p>
+        {% endif %}
+      </div>
+    </div>
+    <div class="row">
+    <div class="span12">
+      <h2>My Samples</h2>
+      {% if samples.object_list %}
+        {% if msg %}
+          <p class="errorlist">{{ msg }}</p>
+        {% endif %}
+        <form class="form-inline" method="post" action="{{ request.get_full_path }}">
+          {% csrf_token %}
+          <div>
+            {% if form.search.errors %}
+              <div class="alert alert-error">
+                {{ form.search.errors }}
+              </div>
+            {% endif %}
+            {{ form.search }}
+            <button class="btn btn-primary" type="submit">
+              <i class="icon-search icon-white"></i>
+            </button>
+          </div>
+        </form>
+        {% include "freezers/base_sample_table.html" with samples=samples %}
+        <script src="/static/js/drawSampleLocations.js"></script>
+        <script type="text/javascript">
+          $('.location').click(function() {
+            toggleLocation();
+            toggleTitle();
+          });
+        </script>
+      {% else %}
+        <p>No samples yet.</a>
+      {% endif %}
+    </div>
+    </div>
+  </section>
+  <section id="files">
+    <div class="page-header">
+      <h1>
+        Files
+        <small>Export my samples to text</small>
+      </h1>
+    </div>
+    {% if files %}
+    {% if not has_text %}
+      <p>
+        <a href="{% url freezers.views.export_samples %}">Click here</a>
+        to export samples to file.
+      </p>
+    {% endif %}
+    <ul class="unstyled">
+      {% for f in files %}
+        <li>
+          <a href="{{ f.url }}">{{ f.filename }}</a>
+          <span class="deleteme">
+            <a href="{% url freezers.views.delete_file forloop.counter %}">
+              delete
+            </a>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+    <script type="text/javascript">
+    $('.deleteme').click(function(e) {
+      e.preventDefault();
+      var link = $(this).children('a').attr('href');
+      var $this = $(this);
+      $.get(link, function(data) {
+        if (data.match(/removed/)) {
+          $this.parent('li').remove();
+        }
+      });
+      if ($('.deleteme').length == $('#user-files').children('p').length == 0) {
+        $('#user-files').html('<p><a href="/freezers/export-samples/">Click here</a> to export samples to file.');
+      }
+    });
+    </script>
+  {% else %}
+    <p>
+      <a href="{% url freezers.views.export_samples %}">Click here</a>
+      to export samples to file.
+    </p>
+  {% endif %}
+  </section>
+  <section id="messages">
+    <div class="page-header">
+      <h1>
+        Messages
+      </h1>
+    </div>
+    {% if messages %}
+    <ul class="unstyled">
+      {% for m in messages %}
+        <li>
+          <dl class="horizontal-dl">
+            <dt>From</dt>
+            <dd>{{ m.sender.get_full_name }}</dd>
+            <dt>Subject</dt>
+            <dd>
+              <a href="{{ m.get_link }}" title="Click to view sample">
+                {{ m.subject }}
+              </a>
+            </dd>
+            <dt>Date</dt>
+            <dd>{{ m.date }}</dd>
+            <dt>Message</dt>
+            <dd>
+              {{ m.message|linebreaks }}
+            </dd>
+            <div class="msg_options">
+              <a href="/freezers/messages/{{ m.id }}/delete/"
+                 title="Permanently remove this message">
+                Delete
+              </a>
+              <a href="/freezers/messages/{{ m.id }}/reply/"
+                 title="Send reply to {{ m.sender.get_full_name }}">
+                Reply
+              </a>
+            </div>
+          </dl>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No messages.</p>
+  {% endif %}
+  </section>
+{% endblock %}

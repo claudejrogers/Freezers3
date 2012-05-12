@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Box View{% endblock %}
+
+{% block header %}Box View{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span12">
+    <h2>
+      Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
+      Drawer {{ did }} Box {{ bid }}{% if boxname %}: {{ boxname }}{% endif %}
+    </h2>
+  </div>
+</div>
+<div class="row">
+  <div class="span8">
+    <div class="alert alert-info">
+      <p id="box-help-text">
+        Click <span class="label label-success">sample icons</span> 
+        to view details, edit, or move the sample and,
+        optionally, any remaining aliquots.
+        Click <span class="label">empty locations</span> in the box  
+        to add a sample to the selected cell.
+        Multiple aliquots can be added in a single operation.
+      </p>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="span12">
+    <div id="box-menu-wrapper">
+      <ul class="nav nav-pills">
+        <li>
+          <a href={% url freezers.views.select_sample_location fid %}
+             title="Click here to select another location in this freezer">
+            Select another location
+          </a>
+        </li>
+        <li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+            Actions
+            <b class="caret"></b>
+          </a>
+        <ul class="dropdown-menu">
+          <li>
+            <a href={% url freezers.views.move_box_select_freezer fid sid rid did bid %}
+               title="Click here to move this box to another location">
+              Move box
+            </a>
+          </li>
+          <li>
+            <a href={% url freezers.views.select_box_location fid sid rid did bid %}
+             title="Click here to add new samples, or view current samples, in this box">
+              Add/view samples
+            </a>
+          </li>
+          <li>
+            <a href={% url freezers.views.rearrange_samples_within_box fid sid rid did bid %}
+             title="Click here to move samples around within this box">
+              Drag-and-drop samples
+            </a>
+          </li>
+          <li>
+            <a href={% url freezers.views.select_samples_in_box fid sid rid did bid %}
+             title="Click here to select then move samples">
+              Select samples to move
+            </a>
+          </li>
+        </ul>
+      </li>
+      <li class="active">
+        <a href="#">
+          Current: Add/view samples
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+</div>
+<div class="row">
+  <div class="span5">
+    <div id="boxDisplay" class="add-sample-form">
+      {% for rw in occupied %}
+        <div>
+          {% for col in rw %}
+            <a href="{{ col.link }}"
+               title="{{ col.get_title_text }}">
+              <canvas id="canvas{{ col.index }}" height="30" width="30"
+                  class="{{ col.occupied_class }} samplelocation"></canvas>
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="span7">
+    {% include "freezers/base_box_sample_table.html" with samples=samples %}
+  </div>
+</div>
+<script src="/static/js/drawSampleLocations.js"></script>
+<script type="text/javascript">
+var slist = {{ slo }};
+var this_sample = {{ curr_samp }};
+drawSampleLocations(slist, this_sample);
+$('.location').click(function() {
+  toggleLocation();
+  toggleTitle();
+});
+$('.samplelocation').mouseover(function() { 
+  var sampleid = $(this).attr('id').replace('canvas', ''); 
+  var tableid = "#row" + sampleid; 
+  var row = $(tableid); 
+  if (row.length > 0) { 
+    row.addClass('hover'); 
+  } 
+});
+$('.samplelocation').mouseout(function() { 
+  var sampleid = $(this).attr('id').replace('canvas', ''); 
+  var tableid = "#row" + sampleid; 
+  var row = $(tableid); 
+  if (row.length > 0) { 
+    row.removeClass('hover'); 
+  } 
+});
+</script>
+{% endblock %}

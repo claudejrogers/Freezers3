@@ -1,0 +1,50 @@
+{% if samples %}
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Date Added</th>
+        <th>Location</th>
+        <th>User</th>
+        <th>Type</th>
+        <th>PI/Lab/Supplier</th>
+        <th>Options</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in samples %}
+        <tr id="row{{ s.cell_location }}">
+          <td>
+            <a href={% url freezers.views.sample_detail s.id %}
+                title="Click here to edit/move/view sample">
+              {{ s.name }}
+            </a>
+          </td>
+          <td>{{ s.date_added|date:"SHORT_DATE_FORMAT" }}</td>
+          <td class="location {{ s.box_width }} {{ s.cell_capacity }}"
+              title="Click to toggle between alphanumeric and numeric cell ids">{{ s.cell_location_name }}</td>
+          <td>{{ s.user.get_full_name }}</td>
+          <td>{{ s.sample_type }}</td>
+          <td>
+            <a href={% url freezers.views.supplier_detail s.pi_lab_supplier.id %}
+                title="Click here to edit/view supplier">
+              {{ s.pi_lab_supplier }}
+            </a>
+          </td>
+          <td>
+            <a class="btn btn-mini"
+               href={% url freezers.views.edit_sample s.id %}
+               title="Edit sample">
+              <i class="icon-edit"></i>
+            </a>
+            <a class="btn btn-danger btn-mini"
+               href="{% url freezers.views.remove_sample_from_index s.id %}?next={% firstof request.path '/freezers/samples/' %}"
+               title="Remove sample">
+              <i class="icon-trash icon-white"></i>
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endif %}

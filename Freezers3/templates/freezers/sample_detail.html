@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Sample Information{% endblock %}
+
+{% block header %}Sample: {{ sample.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+  <div class="span12">
+    <h2>Options</h2>
+    <a class="btn"
+      href={% url freezers.views.select_box_location fid sid rid did bid %}
+      title="View sample box">
+      <i class="icon-th"></i>
+    </a>
+    <a class="btn"
+      href={% url freezers.views.edit_sample sample.id %}
+      title="Edit sample details">
+      <i class="icon-edit"></i>
+    </a>
+    <a class="btn"
+      href={% url freezers.views.move_sample_select_freezer sample.id %}
+      title="Move sample">
+      <i class="icon-share"></i>
+    </a>
+    <a class="btn btn-danger"
+      href={% url freezers.views.remove_sample_from_index sample.id %}
+      title="Remove sample">
+      <i class="icon-trash icon-white"></i>
+    </a>
+  </div>
+</div>
+
+<div class="row">
+  <div class="span12">
+    <h2>Sample Details</h2>
+    <dl class="dl-horizontal">
+        <dt>Sample</dt>
+        <dd>{{ sample.name }}</dd>
+        <dt>Location</dt>
+        <dd>{{ sample }}</dd>
+        <dt>Aliquot</dt>
+        <dd>
+          {% if sample.aliquot_number %}
+            {{ sample.aliquot_number }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Solvent</dt>
+        <dd>
+          {% if sample.solvent %}
+            {{ sample.solvent }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Sample Type</dt>
+        <dd>{{ sample.sample_type }}</dd>
+        <dt>Species</dt>
+        <dd>
+          {% if sample.species %}
+            {{ sample.species }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Host Cell</dt>
+        <dd>
+          {% if sample.host_cell_name %}
+            {{ sample.host_cell_name }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>User</dt>
+        <dd>{{ sample.user.get_full_name }}</dd>
+        <dt>PI/Lab/Supplier</dt>
+        <dd>
+          <a href={% url freezers.views.supplier_detail sample.pi_lab_supplier.id %}
+            title="Click to view/edit supplier details">
+            {{ sample.pi_lab_supplier }}
+          </a>
+        </dd>
+        <dt>Catalog Number</dt>
+        <dd>
+          {% if sample.catalog_number %}
+            {{ sample.catalog_number }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+        <dt>Date Added</dt>
+        <dd>{{ sample.date_added|date:"SHORT_DATE_FORMAT" }}</dd>
+        <dt>Date Removed</dt>
+        <dd>
+          {% if sample.date_removed %}
+            {{ sample.date_removed|date:"SHORT_DATE_FORMAT" }}
+          {% else %}
+            NA
+          {% endif %}
+        </dd>
+        <dt>Date Produced</dt>
+        <dd>{{ sample.production_date|date:"SHORT_DATE_FORMAT" }}</dd>
+        <dt>Concentration</dt>
+        <dd>
+          {{ sample.concentration }}  
+          {% if "cell" in sample.sample_type|lower %}
+            10^6 cells/ml
+          {% else %}
+            &mu;g/&mu;l
+          {% endif %}
+        </dd>
+        <dt>Volume</dt>
+        <dd>{{ sample.volume }} &mu;l</dd>
+        <dt>Comments</dt>
+        <dd>
+          {% if sample.coments %}
+            {{ sample.comments }}
+          {% else %}
+            Not provided
+          {% endif %}
+        </dd>
+    </dl>
+  </div>
+</div>
+{% endblock %}

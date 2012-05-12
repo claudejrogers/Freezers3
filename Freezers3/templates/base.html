@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Freezer Inventory | {% block title %}{% endblock %}</title>
+    {% block meta %}{% endblock %}
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 30px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/docs.css" rel="stylesheet">
+    {% block stylesheets %}{% endblock %}
+    <script src="/static/js/jquery-1.7.1.min.js"></script>
+    {% block javascripts %}{% endblock %}
+  </head>
+  <body>
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Freezer Inventory</a>
+          <div class="nav-collapse">
+            <ul class="nav">
+              <li>
+                <a href="{% url freezers.views.home_link %}">
+                  <i class="icon-home icon-white"></i>
+                  Home
+                </a>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="icon-list icon-white"></i>
+                  Index 
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url freezers.views.freezer_index %}">
+                      Freezers
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url freezers.views.sample_index %}">
+                      Samples
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url freezers.views.supplier_index %}">
+                      Suppliers
+                    </a>
+                  </li>
+                  <li>
+                    <a href={% url freezers.views.removed_index %}>
+                      Removed Samples
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <i class="icon-plus icon-white"></i>
+                  Add 
+                  <b class="caret"></b>
+                </a>
+                <ul class="dropdown-menu">
+                  <li>
+                    <a href="{% url freezers.views.add_freezer %}"
+                         title="Create a new freezer">
+                      Add Freezers
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url freezers.views.freezer_index %}?orig=add-samples">
+                      Add Samples
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url freezers.views.add_sample_type %}?next={% firstof request.path '/freezers/' %}">
+                      Add Sample Type
+                    </a>
+                  </li>
+                  <li>
+                    <a href="{% url freezers.views.add_supplier %}?next={% firstof request.path '/freezers' %}">
+                      Add Suppliers
+                    </a>
+                  </li>
+                </ul>
+              </li>
+              {% if request.user.is_superuser %}
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <i class="icon-wrench icon-white"></i>
+                    Admin
+                    <b class="caret"></b>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <a href="/admin/">Homepage</a>
+                    </li>
+                    <li>
+                      <a href="#">Users</a>
+                    </li>
+                    <li>
+                      <a href="#">Freezers</a>
+                    </li>
+                  </ul>
+                </li>
+              {% endif %}
+            </ul>
+          </div>
+          <form class="navbar-search pull-right" action>
+            <i class="icon-search icon-white"></i>
+            <input type="text" class="search-query span3" placeholder="Search">
+          </form>
+          <ul class="nav pull-right">
+            <li>
+              <a href="{% url views.logout_view %}">
+                <i class="icon-off icon-white"></i>
+                Logout
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <header class="jumbotron masthead" id="overview">
+        <h1>{% block header %}{% endblock %}</h1>
+      </header>
+      {% block content %}{% endblock %}
+    </div>
+    <script src="/static/js/bootstrap.js"></script>
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

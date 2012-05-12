@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Add Sample Type{% endblock %}
+
+{% block header %}Add Sample Type{% endblock %}
+
+{% block content %}
+  <form class="form-horizontal" method="post" 
+        action="./?next={{ redirect_to }}">
+  {% csrf_token %}
+    <fieldset>
+      {% for field in form %}
+        <div class="control-group">
+          {% if field.errors %}
+            <div class="alert alert-error">
+              {{ field.errors }}
+            </div>
+          {% endif %}
+          <label class="control-label" for="id_{{ field.name }}">
+            {{ field.label }}
+          </label>
+          <div class="controls">
+            {{ field }}
+            <span class="help-inline">{{ field.help_text }}</span>
+          </div>
+        </div>
+      {% endfor %}
+      <div class="controls">
+        <input class="btn btn-primary" type="submit" value="Add" />
+      </div>
+    </fieldset>
+  </form>
+{% endblock %}

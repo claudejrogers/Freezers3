@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Freezers{% endblock %}
+
+{% block header %}
+  {% if add_samples %}
+    Add Samples to an Available Freezer
+  {% else %}
+    Available Freezers
+  {% endif %}
+{% endblock %}
+
+{% block content %}
+  {% if freezer_list %}
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Type</th>
+          <th>Manufacturer</th>
+          <th>Model</th>
+          <th>&#35; Samples</th>
+          <th></th>
+          <th>&#35; Available</th>
+          <th></th>
+          <th>&#37; Available</th>
+          <th></th>
+          <th>Options</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for f in freezer_list %}
+        <tr>
+          <td>{{ f.building_room_number }}</td>
+          <td>{{ f.get_kind_display }}</td>
+          <td>{{ f.manufacturer }}</td>
+          <td>
+            <a href={% url freezers.views.freezer_detail f.id %}
+               title="View/edit details on this freezer">
+              {{ f.model }}
+            </a>
+          </td>
+          <td>
+            {{ f.occupied }}
+          </td>
+          <td>
+            <a class="btn btn-info btn-mini aright"
+               href={% url freezers.views.select_sample_location f.id %}
+               title="View samples in freezer">
+              View
+            </a>
+          </td>
+          <td>
+            {{ f.unoccupied }}
+          </td>
+          <td>
+            <a class="btn btn-success btn-mini aright"
+               href={% url freezers.views.select_sample_location f.id %}
+               title="Add samples to freezer">
+              + New
+            </a>
+          </td>
+          <td>{{ f.percent_free|floatformat:2 }}</td>
+          <td>
+            <canvas id="indicator{{ forloop.counter }}" height="20" width="110">
+            </canvas>
+          </td>
+          <td>
+            <a class="btn btn-mini"
+               href={% url freezers.views.edit_freezer f.id %}
+               title="Click to edit this freezer">
+              <i class="icon-edit"></i>
+            </a>
+            <a class="btn btn-danger btn-mini kill-freezer"
+               href="#modal{{ f.id }}"
+               data-toggle="modal"
+               title="Remove this freezer">
+              <i class="icon-trash icon-white"></i>
+            </a>
+          </td>
+        </tr>
+        <script src="/static/js/drawSampleLocations.js"></script>
+        <script text="text/javascript">
+          var free = {{ f.percent_free|floatformat:2 }};
+          var idno = {{ forloop.counter }};
+          drawProgressBar(free, idno);
+        </script>
+        {% endfor %}
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>
+          <a class="btn btn-mini"
+             href={% url freezers.views.add_freezer %}
+             title="Add new freezer">
+            <i class="icon-plus-sign"></i>
+          </a>
+        </td>
+      </tbody>
+    </table>
+    {% for f in freezer_list %}
+      <div id="modal{{ f.id }}" class="modal hide fade">
+        <div class="modal-header">
+          <button class="close" data-dismiss="modal">x</button>
+          <h3>Delete this freezer?</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            <span class="label label-important">Warning!</span>
+            This action will delete the freezer {{ f }} and remove any samples.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <a href="/freezers/" class="btn">Close</a>
+          <a href={% url freezers.views.remove_freezer f.id %} class="btn btn-danger">Remove Freezer</a>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <p>
+      <a href={% url freezers.views.add_freezer %}>
+        Click here
+      </a>
+      to add a freezer.
+    </p>
+  {% endif %}
+{% endblock %}

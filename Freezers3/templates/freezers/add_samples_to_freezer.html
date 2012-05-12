@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Add Samples{% endblock %}
+{% block stylesheets %}
+<link type="text/css" href="/static/css/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+{% endblock %}
+{% block scripts %}
+<script type="text/javascript" src="/static/js/jquery-ui-1.8.16.custom.min.js"></script>
+<script type="text/javascript">
+$(function() {
+  $("#id_production_date").datepicker({dateFormat: 'yy-mm-dd'});
+  $("#id_date_added").datepicker({dateFormat: 'yy-mm-dd'});
+});
+</script>
+{% endblock %}
+
+{% block header %}Add Samples{% endblock %}
+
+{% block content %}
+
+{% if bid %}
+  <h2>
+    Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
+    Drawer {{ did }} Box {{ bid }}
+  </h2>
+  <p>
+    Samples will be placed in the selected location.
+  </p>
+{% else %}
+  <p>
+    Samples will be placed in Freezer {{ fname }}
+    {% if sid %}
+      Shelf {{ sid }}
+      {% if rid %}
+        Rack {{ rid }}
+        {% if did %}
+          Drawer {{ did }}
+          {% if bid %}
+            Box {{ bid }}
+          {% endif %}
+        {% endif %}
+      {% endif %}
+    {% endif %}
+  </p>
+{% endif %}
+<p>
+  <a href={% url freezers.views.select_sample_location fid %}
+     title="Click here to select another location in this freezer">
+    Select another location
+  </a>
+</p>
+{% if bid %}
+  <p>
+    <a href={% url freezers.views.select_box_location fid sid rid did bid %}
+       title="Click here to view and add samples to this box">
+      Return to box view
+    </a>
+  </p>
+{% endif %}
+{% if msg %}
+  <p class="errorlist">{{ msg }}</p>
+{% endif %}
+{% if bid %}
+  <div id="boxDisplay" class="add-sample-form">
+    {% for rw in occupied %}
+      <div>
+        {% for col in rw %}
+          <canvas id="canvas{{ col.index }}" height="30" width="30"
+                  class="{{ col.occupied_class }}"></canvas>
+        {% endfor %}
+      </div>
+    {% endfor %}
+  </div>
+{% endif %}
+<div class="add-sample-form">
+  <form class="form-horizontal" method="post" action="{{ url }}">
+    {% csrf_token %}
+    <fieldset>
+      {% for field in form %}
+        <div class="control-group">
+          {% if field.errors %}
+            <div class="alert alert-error">
+              {{ field.errors }}
+            </div>
+          {% endif %}
+          <label class="control-label" for="id_{{ field.name }}" 
+                 id="id_{{ field.name }}" >
+            {{ field.label }}
+          </label>
+          <div class="controls">
+            {{ field }}
+            <span class="help-inline">{{ field.help_text }}</span>
+          </div>
+        </div>
+      {% endfor %}
+      <div class="controls">
+        <p>&#42; Required field</p>
+        <input class="btn btn-primary" type="submit" value="Add" />
+      </div>
+    </fieldset>
+  </form>
+</div>
+{% if bid %}
+<script src="/static/js/drawSampleLocations.js"></script>
+<script type="text/javascript">
+var slist = {{ slo }};
+var this_sample = {{ curr_samp }};
+drawSampleLocations(slist, this_sample);
+$('#id_sample_type').change(function() {
+  if ( $('#id_sample_type option:selected').text().match(/cell/i) ) {
+    // do if true
+    $('.help-inline')[13].innerText = "* in 10^6 cell/ml";
+  } else {
+    // default
+    $('.help-inline')[13].innerText = "* in \u03BCg/ml";
+  }
+});
+</script>
+{% endif %}
+{% endblock %}
+

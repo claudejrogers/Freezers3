@@ -1,0 +1,43 @@
+{% extends "login_base.html" %}
+{% load url from future %}
+
+{% block title %}Login{% endblock %}
+
+{% block header %}Please sign in{% endblock %}
+
+{% block content %}
+
+{% if form.errors %}
+  <p class="alert alert-error">
+    Your username and password didn't match. Please try again.
+  </p>
+{% endif %}
+
+<form class="form-horizontal" method="post" action="{% url 'django.contrib.auth.views.login' %}">
+{% csrf_token %}
+
+<fieldset class="control-group">
+  <label class="control-label" for="id_{{ form.username.name }}">
+    {{ form.username.label }}
+  </label>
+  <div class="controls">
+    {{ form.username }}
+    <p class="help-text">{{ form.username.help_text }}</p>
+  </div>
+
+  <label class="control-label" for="id_{{ form.password.name }}">
+    {{ form.password.label_tag }}
+  </label>
+  <div class="controls">
+    {{ form.password }}
+    <p class="help-text">{{ form.password.help_text }}</p>
+  </div>
+  <div class="controls">
+    <input class="btn btn-primary" type="submit" value="login" />
+    <input type="hidden" name="next" value="{{ next }}" />
+  </div>
+</fieldset>
+
+</form>
+
+{% endblock %}

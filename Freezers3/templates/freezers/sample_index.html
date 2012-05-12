@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block title %}All Samples{% endblock %}
+
+{% block header %}Samples{% endblock %}
+
+{% block content %}
+{% if samples.object_list %}
+  {% if msg %}
+    <p class="errorlist">{{ msg }}</p>
+  {% endif %}
+  <form class="form-inline" method="post" action="{{ request.get_full_path }}">
+    {% csrf_token %}
+    <fieldset>
+      <div>
+        {{ form.search.errors }}
+        {{ form.search }}
+        <button class="btn btn-primary" type="submit">
+          <i class="icon-search icon-white"></i>
+        </button>
+      </div>
+    </fieldset>
+  </form><br />
+  {% include "freezers/base_sample_table.html" with samples=samples %}
+  <script src="/static/js/drawSampleLocations.js"></script>
+  <script type="text/javascript">
+  $('.location').click(function() {
+    toggleLocation();
+    toggleTitle();
+  });
+  </script>
+{% else %}
+<p>
+  No samples yet.
+  <a href="{% url freezers.views.freezer_index %}?orig=add-samples"
+     title="Add samples">
+    Click here
+  </a>
+  to add samples.
+</p>
+{% endif %}
+
+{% endblock %}

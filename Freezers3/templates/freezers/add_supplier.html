@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Add Supplier{% endblock %}
+
+{% block header %}Add Supplier{% endblock %}
+
+{% block content %}
+<p id="box-help-text" class="round">
+  Use the supplier field to describe the origins of the samples.<br />
+  A supplier could be a company, collaborator, or researcher in the lab.
+</p>
+<form class="form-horizontal" method="post" 
+      action="./?next={{ redirect_to }}">
+  {% csrf_token %}
+  <fieldset>
+    {% for field in form %}
+      <div class="control-group">
+        {% if field.errors %}
+          <div class="alert alert-error">
+            {{ field.errors }}
+          </div>
+        {% endif %}
+        <label class="control-label" for="id_{{ field.name }}">
+          {{ field.label }}
+        </label>
+        <div class="controls">
+          {{ field }}
+          <span class="help-inline">{{ field.help_text }}</span>
+        </div>
+      </div>
+    {% endfor %}
+    <div class="controls">
+      <p>&#42; Required field</p>
+      <input class="btn btn-primary" type="submit" value="Add" />
+    </div>
+  </fieldset>
+</form>
+{% endblock %}

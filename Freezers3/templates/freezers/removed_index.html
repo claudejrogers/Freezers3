@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Removed Samples{% endblock %}
+
+{% block header %}Removed Samples{% endblock %}
+{% block content %}
+{% if msg and not query %}
+  <div class="alert alert-error">{{ msg }}</div>
+{% else %}
+  {% if msg %}
+    <div class="alert alert-error">{{ msg }}</div>
+  {% endif %}
+{% endif %}
+  <form class="form-inline" method="post" action="/freezers/removed/">
+    {% csrf_token %}
+    <fieldset>
+    {% for field in form %}
+      {% if field.errors %}
+        <div class="alert alert-error">
+          {{ field.errors }}
+        </div>
+      {% endif %}
+      <div>
+        {{ field }}
+        <button class="btn btn-primary" type="submit">
+          <i class="icon-search icon-white"></i>
+        </button>
+      </div>
+      {% endfor %}
+    </fieldset>
+  </form><br />
+  {% if results %}
+    <h2>Results</h2>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date Added</th>
+          <th>Former Location</th>
+          <th>User</th>
+          <th>Type</th>
+          <th>PI/Lab/Supplier</th>
+          <th>Options</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in results.object_list %}
+        <tr>
+          <td>
+            <a href={% url freezers.views.removed_detail s.id %}
+             title="View sample details">
+              {{ s.name }}
+            </a>
+          </td>
+          <td>{{ s.date_added|date:"SHORT_DATE_FORMAT" }}</td>
+          <td>{{ s }}</td>
+          <td>{{ s.user.get_full_name }}</td>
+          <td>{{ s.sample_type }}</td>
+          <td>
+            <a href={% url freezers.views.supplier_detail s.pi_lab_supplier.id %}
+             title="Click to view/edit supplier details">
+              {{ s.pi_lab_supplier }}
+            </a>
+          </td>
+          <td>
+            <a class="btn btn-mini" 
+               title="Return to original location"
+               href={% url freezers.views.return_removed_sample s.id %}>
+              <i class="icon-share"></i>
+            </a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <div class="pagination">
+      {% if results.paginator.num_pages %}
+      <ul>
+        {% if results.has_previous %}
+          {% if querystring %}
+            <li>
+              <a href="?page={{ results.previous_page_number }}{{ querystring }}">
+                &#10229;
+              </a>
+            </li>
+          {% else %}
+            <li>
+              <a href="?page={{ results.previous_page_number }}">
+                &#10229;
+              </a>
+            </li>
+          {% endif %}
+        {% else %}
+            <li class="disabled">
+              <a href="#">
+                &#10229;
+              </a>
+            </li>
+        {% endif %}
+
+        <li class="active">
+          <a href="#">
+            Page {{ results.number }} of {{ results.paginator.num_pages }}.
+          </a>
+        </li>
+        {% if results.has_next %}
+          {% if querystring %}
+            <li>
+              <a href="?page={{ results.next_page_number }}{{ querystring }}">
+                &#10230;
+              </a>
+            <li>
+          {% else %}
+            <li>
+              <a href="?page={{ results.next_page_number }}">
+                &#10230;
+              </a>
+            </li>
+          {% endif %}
+        {% else %}
+          <li class="disabled">
+            <a href="#">
+              &#10230;
+            </a>
+          <li>
+        {% endif %}
+      </ul>
+    {% endif %}
+    </div>
+    {% if return_code %}
+      <div class="modal" id="removed_alert">
+        <div class="modal-header">
+          <h3>Returning sample failed!</h3>
+        </div>
+        <div class="modal-body">
+          <p>
+            It was not possible to return the sample because
+            {% if return_code == 'occ' %}
+              the former sample location is already occupied.
+            {% else %}
+              the former sample location no longer exists.
+            {% endif %}
+          </p>
+        </div>
+        <div class="modal-footer">
+          <a class="btn btn-primary"
+             href={% url freezers.views.removed_index %}>
+            Ok
+          </a>
+        </div>
+      </div>
+      <script type="text/javascript">
+        $('#removed_alert').modal();
+      </script>
+    {% endif %}
+
+  {% endif %}
+{% endblock %}

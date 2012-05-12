@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Select Sample Location{% endblock %}
+
+
+{% block header %}Select a Location for Samples{% endblock %}
+
+{% block content %}
+<p>
+  The following samples will be transfered to this box:
+</p>
+<div id="BoxDisplay">
+  {% for rw in display_list %}
+    <div>
+      {% for col in rw %}
+        <canvas id="canv{{ col.index }}" height="30" width="30"
+                title="{{ col.text }}"></canvas>
+      {% endfor %}
+    </div>
+  {% endfor %}
+</div>
+<p>
+  Samples will be moved to Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
+  Drawer {{ did }} Box {{ bid }}
+</p>
+<p>
+  <a href="{% url freezers.views.move_selected_samples_select_freezer %}?{{ query }}"
+     title="Select another location to place this sample">
+    Select another location
+  </a>
+</p>
+<div class="row">
+  <div class="span5">
+    <div id="boxDisplay" class="add-sample-form">
+      {% for rw in occupied %}
+        <div>
+          {% for col in rw %}
+            <a href="{{ col.link }}?{{ query }}"
+               title="{{ col.get_title_text }}">
+              <canvas id="canvas{{ col.index }}" class="samplelocation" height="30" width="30"></canvas>
+            </a>
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+  <div class="span7">
+    {% include "freezers/base_box_sample_table.html" with samples=samples %}
+  </div>
+</div>
+<script src="/static/js/drawSampleLocations.js"></script>
+<script type="text/javascript">
+drawAliquots({{ alonum }});
+$('.location').click(function() {
+  toggleLocation();
+  toggleTitle();
+});
+var slist = {{ slo }};
+var this_sample = {{ curr_samp }};
+drawSampleLocations(slist, this_sample);
+$('.samplelocation').mouseover(function() { 
+  var sampleid = $(this).attr('id').replace('canvas', ''); 
+  var tableid = "#row" + sampleid; 
+  var row = $(tableid); 
+  if (row.length > 0) { 
+    row.addClass('hover'); 
+  } 
+});
+$('.samplelocation').mouseout(function() { 
+  var sampleid = $(this).attr('id').replace('canvas', ''); 
+  var tableid = "#row" + sampleid; 
+  var row = $(tableid); 
+  if (row.length > 0) { 
+    row.removeClass('hover'); 
+  } 
+});
+
+</script>
+{% endblock %}
