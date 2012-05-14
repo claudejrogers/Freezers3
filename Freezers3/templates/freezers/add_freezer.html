@@ -7,7 +7,7 @@
 {% block content %}
 <form class="form-horizontal" method="post" 
       action={% url freezers.views.add_freezer %}>
-    {% csrf_token %}
+  {% csrf_token %}
   <fieldset>
     {% for field in form %}
       <div class="control-group">

@@ -2,25 +2,28 @@
 
 {% block title %}Remodel Freezer{% endblock %}
 
+{% block header %}Remodel Freezer{% endblock %}
+
 {% block content %}
-<h1>Remodel Freezer</h1>
-<p>
-  Remodel Freezer {{ fname }}:
-  {% if sid %}
-    Shelf {{ sid }}
-    {% if rid %}
-      Rack {{ rid }}
-      {% if did %}
-        Drawer {{ did }}
-        {% if bid %}
-          Box {{ bid }}
+<div class="page-header">
+  <h1>
+    Remodel Freezer {{ fname }}:<br />
+    <small>
+      Shelf {{ sid }}
+      {% if rid %}
+        Rack {{ rid }}
+        {% if did %}
+          Drawer {{ did }}
+          {% if bid %}
+            Box {{ bid }}
+          {% endif %}
         {% endif %}
       {% endif %}
-    {% endif %}
-  {% endif %}
-</p>
+    </small>
+  </h1>
+</div>
 {% if msg %}
-  <p class="errorlist">{{ msg }}</p>
+  <div class="alert alert-error">{{ msg }}</div>
 {% endif %}
 <form method="post" action="{{ request.get_full_path }}">
   {% csrf_token %}

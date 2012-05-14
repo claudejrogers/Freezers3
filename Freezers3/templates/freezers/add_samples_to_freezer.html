@@ -19,47 +19,51 @@ $(function() {
 {% block content %}
 
 {% if bid %}
-  <h2>
-    Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
-    Drawer {{ did }} Box {{ bid }}
-  </h2>
-  <p>
-    Samples will be placed in the selected location.
-  </p>
+  <div class="page-header">
+    <h1>
+      Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
+      Drawer {{ did }}<br />
+      <small>
+        Box {{ bid }}. Samples will be placed in the selected location.
+      </small>  
+    </h1>
+  </div>
 {% else %}
-  <p>
-    Samples will be placed in Freezer {{ fname }}
-    {% if sid %}
-      Shelf {{ sid }}
-      {% if rid %}
-        Rack {{ rid }}
-        {% if did %}
-          Drawer {{ did }}
-          {% if bid %}
-            Box {{ bid }}
+  <div class="page-header">
+    <h1>
+      Samples will be placed in Freezer {{ fname }}<br />
+      <small>
+        Shelf {{ sid }}
+        {% if rid %}
+          Rack {{ rid }}
+          {% if did %}
+            Drawer {{ did }}
           {% endif %}
         {% endif %}
-      {% endif %}
-    {% endif %}
-  </p>
+      </small>
+    </h1>
+  </div>
 {% endif %}
-<p>
-  <a href={% url freezers.views.select_sample_location fid %}
-     title="Click here to select another location in this freezer">
-    Select another location
-  </a>
-</p>
-{% if bid %}
-  <p>
-    <a href={% url freezers.views.select_box_location fid sid rid did bid %}
-       title="Click here to view and add samples to this box">
-      Return to box view
+<div class="row">
+  <div class="span12">
+    <a class="btn"
+       href={% url freezers.views.select_sample_location fid %}
+       title="Click here to select another location in this freezer">
+      <i class="icon-align-justify"></i>
     </a>
-  </p>
-{% endif %}
-{% if msg %}
-  <p class="errorlist">{{ msg }}</p>
-{% endif %}
+    {% if bid %}
+    <a class="btn"
+       href={% url freezers.views.select_box_location fid sid rid did bid %}
+       title="Return to box view">
+      <i class="icon-th"></i>  
+    </a>
+    {% endif %}
+    {% if msg %}
+      <div class="alert alert-error">{{ msg }}</div>
+    {% endif %}
+  </div>
+</div>
+
 {% if bid %}
   <div id="boxDisplay" class="add-sample-form">
     {% for rw in occupied %}
@@ -72,7 +76,7 @@ $(function() {
     {% endfor %}
   </div>
 {% endif %}
-<div class="add-sample-form">
+<div class="add-sample-form move-box-form">
   <form class="form-horizontal" method="post" action="{{ url }}">
     {% csrf_token %}
     <fieldset>

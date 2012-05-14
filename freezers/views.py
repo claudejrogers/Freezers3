@@ -714,6 +714,8 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
         nbn.delete()
     return HttpResponseRedirect(redirect_url)
 
+##############################################################################
+
 @login_required
 def search(request, option=None, query=None):
     """
@@ -722,18 +724,15 @@ def search(request, option=None, query=None):
     """
     query = request.GET.get('query', '')
     msg, querystring = '', ''
+    c = {}
     if request.method == 'POST':
-        form = SearchSamples(request.POST)
+        form = HeaderSearchForm(request.POST)
         redirect_url = '/freezers/search/'
         if form.is_valid():
-            query = form.cleaned_data['search'].strip()
+            print "Is VALID!!!!"
+            query = form.cleaned_data['header_search'].strip()
             redirect_url += '?query=%s' % query.replace(' ', '+')
             return HttpResponseRedirect(redirect_url)
-        else:
-            c = {'form': form}
-    else:
-        form = SearchSamples()
-        c = {'form': form}
     if query:
         s = SampleLocation.objects.filter(occupied=True)
         results = searchHelper(s, query)
@@ -755,9 +754,12 @@ def search(request, option=None, query=None):
         else:
             msg = "Query resulted in no hits!"
             c['msg'] = msg
+            print msg
     if querystring:
         c['querystring'] = querystring
     return render(request, 'freezers/search_samples.html', c)
+
+##############################################################################
 
 @login_required
 def select_region_to_edit(request, freezer_id):

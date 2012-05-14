@@ -5,7 +5,12 @@
 {% block header %}Move Sample{% endblock %}
 
 {% block content %}
-<h2>Sample: {{ sample.name }} in {{ sample }}</h2>
+<div class="page-header">
+  <h1>
+      Sample: {{ sample.name }}<br /> 
+      <small>{{ sample }}</small>
+  </h1>
+</div>
 <div id="BoxDisplay">
   {% for rw in display_list %}
     <div>
@@ -18,7 +23,7 @@
   {% endfor %}
 </div>
 {% if msg %}
-  <p class="errorlist">{{ msg }}</p>
+  <div class="alert alert-error">{{ msg }}</div>
 {% endif %}
 <form class="form-horizontal" method="post" action={% url freezers.views.move_sample_select_freezer sid %}>
   {% csrf_token %}
@@ -26,7 +31,9 @@
   {% for field in form %}
     <div class="control-group">
       {% if field.errors %}
-        {{ field.errors }}
+        <div class="alert alert-error">
+          {{ field.errors }}
+        </div>
       {% endif %}
       <label class="control-label" for="id_{{ field.name }}"> 
         {{ field.label }} 
@@ -44,14 +51,18 @@
   </fieldset>
 </form>
 {% if fid %}
-  <br />
-  <p>
-    Select a location for your samples from the options below.
-    To move the sample to the first available position in the freezer,
-    <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid atoa=atoa %}
-       title="Click here to move samples to the first available location in this freezer">
-      Click here</a>.
-  </p>
+  <div class="page-header">
+    <h1>
+        Select Location<br />
+      <small>
+        Select a location for your samples from the options below.
+        To move the sample to the first available position in the freezer,
+        <a href={% url freezers.views.move_sample sample_id=sample.id freezer_id=fid atoa=atoa %}
+           title="Click here to move samples to the first available location in this freezer">
+           Click here</a>.
+      </small>
+    </h1>
+  </div>
   <ul class="markless">
     {% for s in shelves %}
       <li>

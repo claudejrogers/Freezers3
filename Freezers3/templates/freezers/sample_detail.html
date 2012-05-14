@@ -7,25 +7,32 @@
 {% block content %}
 <div class="row">
   <div class="span12">
-    <h2>Options</h2>
+    <div class="page-header">
+      <h2>Options</h2>
+    </div>
     <a class="btn"
-      href={% url freezers.views.select_box_location fid sid rid did bid %}
-      title="View sample box">
+       href={% url freezers.views.sample_index %}
+       title="List samples">
+      <i class="icon-list"></i>
+    </a>
+    <a class="btn"
+       href={% url freezers.views.select_box_location fid sid rid did bid %}
+       title="View sample box">
       <i class="icon-th"></i>
     </a>
     <a class="btn"
-      href={% url freezers.views.edit_sample sample.id %}
-      title="Edit sample details">
+       href={% url freezers.views.edit_sample sample.id %}
+       title="Edit sample details">
       <i class="icon-edit"></i>
     </a>
     <a class="btn"
-      href={% url freezers.views.move_sample_select_freezer sample.id %}
-      title="Move sample">
+       href={% url freezers.views.move_sample_select_freezer sample.id %}
+       title="Move sample">
       <i class="icon-share"></i>
     </a>
     <a class="btn btn-danger"
-      href={% url freezers.views.remove_sample_from_index sample.id %}
-      title="Remove sample">
+       href={% url freezers.views.remove_sample_from_index sample.id %}
+       title="Remove sample">
       <i class="icon-trash icon-white"></i>
     </a>
   </div>
@@ -33,7 +40,9 @@
 
 <div class="row">
   <div class="span12">
-    <h2>Sample Details</h2>
+    <div class="page-header">
+      <h2>Sample Details</h2>
+    </div>
     <dl class="dl-horizontal">
         <dt>Sample</dt>
         <dd>{{ sample.name }}</dd>

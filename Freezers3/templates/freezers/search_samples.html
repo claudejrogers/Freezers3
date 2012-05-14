@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block header %}Search Results{% endblock %}
+
+{% block content %}
+{% if msg %}
+  <div class="alert alert-error">
+    {{ msg }}
+  </div>
+{% endif %}
+
+{% if results %}
+  {% include "freezers/base_sample_table.html" with samples=results %}
+  <script src="/static/js/drawSampleLocations.js"></script>
+  <script type="text/javascript">
+  $('.location').click(function() {
+    toggleLocation();
+    toggleTitle();
+  });
+  </script>
+{% endif %}
+
+{% endblock %}

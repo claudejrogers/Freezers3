@@ -67,3 +67,6 @@ div#boxDisplay {
 .hidden {
   visibility: hidden;
 }
+.move-box-form {
+  margin-top:2em;
+}

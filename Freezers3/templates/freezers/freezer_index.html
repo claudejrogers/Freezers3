@@ -3,14 +3,28 @@
 {% block title %}Freezers{% endblock %}
 
 {% block header %}
-  {% if add_samples %}
-    Add Samples to an Available Freezer
-  {% else %}
     Available Freezers
-  {% endif %}
 {% endblock %}
 
 {% block content %}
+  {% if add_samples %}
+    <div class="page-header">
+      <h1>
+        Add Samples to an Available Freezer
+      </h1>
+    </div>
+    <div class="row">
+      <div class="span8">
+        <div class="alert alert-info">
+          <p>
+            To add samples, select a location from the list of freezers below.<br />
+            Click the <span class="label label-success">+ New</span> 
+            button then select a sublocation within that freezer.
+          </p>
+        </div>
+      </div>
+    </div>
+  {% endif %}
   {% if freezer_list %}
     <table class="table table-striped">
       <thead>

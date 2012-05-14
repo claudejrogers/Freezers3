@@ -13,10 +13,15 @@
 {% block content %}
 <div class="row">
   <div class="span12">
-    <h2>
-      Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
-      Drawer {{ did }} Box {{ bid }}{% if boxname %}: {{ boxname }}{% endif %}
-    </h2>
+    <div class="page-header">
+      <h1>
+        Freezer {{ fname }} Shelf {{ sid }} Rack {{ rid }}
+        Drawer {{ did }}<br /> 
+        <small>
+          Box {{ bid }}{% if boxname %}: {{ boxname }}{% endif %}
+        </small>
+      </h1>
+    </div>
   </div>
 </div>
 <div class="row">

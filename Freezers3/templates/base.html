@@ -114,9 +114,15 @@
               {% endif %}
             </ul>
           </div>
-          <form class="navbar-search pull-right" action>
-            <i class="icon-search icon-white"></i>
-            <input type="text" class="search-query span3" placeholder="Search">
+          <form class="navbar-search pull-right" method="post"
+                action="{% url freezers.views.search %}">
+            {% csrf_token %}
+            <fieldset>
+              <i class="icon-search icon-white"></i>
+              <input id="id_header_search" type="text" 
+                     class="search-query span3" name="header_search"
+                     maxlength="80" placeholder="Search"> 
+            </fieldset>
           </form>
           <ul class="nav pull-right">
             <li>

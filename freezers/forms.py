@@ -102,6 +102,8 @@ class SimpleSearchForm(forms.Form):
                              help_text="*",
                              widget=forms.TextInput(attrs={'class': 'span5'}))
 
+class HeaderSearchForm(forms.Form):
+    header_search = forms.CharField(max_length=80)
 
 class ChangeFreezerLayout1(forms.Form):
     each_shelf_should_have = forms.IntegerField(help_text="racks",

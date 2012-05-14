@@ -5,16 +5,24 @@
 {% block header %}Edit Layout for: Freezer {{ fname }}{% endblock %}
 
 {% block content %}
-<p id="box-help-text" class="round">
-  Select the parent level of region to edit.<br />
-  For example, select a shelf to edit all the drawers, racks, boxes, or cells
-  on that shelf.<br />
-  Select a rack to edit all the drawers, racks, boxes, or cells in that rack,
-  etc.<br />
-  To make changes to the entire freezer,
-  <a href={% url freezers.views.edit_freezer f.id %}>Click Here</a>.
-</p>
+<div class="row">
+  <div class="span8">
+    <div class="alert alert-info">
+      <p id="box-help-text">
+        Select the parent level of region to edit.
+        For example, select a shelf to edit all the drawers, racks, boxes, or 
+        cells on that shelf.
+        Select a rack to edit all the drawers, racks, boxes, or cells in that
+        rack, etc.
+        To make changes to the entire freezer,
+        <a href={% url freezers.views.edit_freezer f.id %}>Click Here</a>.
+      </p>
+    </div>
+  </div>
+</div>
 
+<div class="row">
+<div class="span12">
 <ul class="markless">
   {% for s in shelves %}
     <li>
@@ -51,4 +59,6 @@
     </li>
   {% endfor %}
 </ul>
+</div>
+</div>
 {% endblock %}

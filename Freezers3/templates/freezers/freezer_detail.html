@@ -7,12 +7,39 @@ Freezer: {{ f.manufacturer }} {{ f.model }} {{ f.get_kind_display }}
 {% endblock %}
 
 {% block content %}
-  <h2>Location</h2>
+  <div class="page-header">
+    <h2>Options</h2>
+  </div>
+  <a class="btn"
+     href={% url freezers.views.freezer_index %}
+     title="List freezers">
+    <i class="icon-list"></i>
+  </a>
+  <a class="btn" 
+     href={% url freezers.views.edit_freezer f.id %}
+     title="Edit freezer">
+    <i class="icon-edit"></i>
+  </a>
+  <a class="btn"
+     href={% url freezers.views.select_region_to_edit f.id %}
+     title="Change freezer layout">
+    <i class="icon-resize-full"></i>
+  </a>
+  <a class="btn btn-danger"
+     href="#"
+     title="Remove freezer">
+    <i class="icon-trash icon-white"></i>
+  </a>
+  <div class="page-header">
+    <h2>Location</h2>
+  </div>
   <dl class="dl-horizontal">
     <dt>Building &amp; Room</dt>
     <dd>{{ f.building_room_number }}</dd>
   </dl>
-  <h2>Service Information</h2>
+  <div class="page-header">
+    <h2>Service Information</h2>
+  </div>
   <dl class="dl-horizontal">
     <dt>Product Number</dt>
     <dd>
@@ -39,7 +66,9 @@ Freezer: {{ f.manufacturer }} {{ f.model }} {{ f.get_kind_display }}
       {% endif %}
     </dd>
   </dl>
-  <h2>Current Layout</h2>
+  <div class="page-header">
+    <h2>Current Layout</h2>
+  </div>
   <dl class="dl-horizontal">
     <dt>Number of shelfs</dt>
     <dd>{{ f.shelf_capacity }}/freezer</dd>
@@ -52,14 +81,4 @@ Freezer: {{ f.manufacturer }} {{ f.model }} {{ f.get_kind_display }}
     <dt>Number of cells</dt>
     <dd>{{ f.cell_capacity }}/box</dd>
   </dl>
-  <p>
-    <a href={% url freezers.views.edit_freezer f.id %}>
-      Edit Freezer Information
-    </a>
-  </p>
-  <p>
-    <a href="/freezers/{{ f.id }}/select-region-to-edit/">
-      Change Freezer Subsection Layout
-    </a>
-  </p>
 {% endblock %}

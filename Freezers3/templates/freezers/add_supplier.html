@@ -5,10 +5,16 @@
 {% block header %}Add Supplier{% endblock %}
 
 {% block content %}
-<p id="box-help-text" class="round">
-  Use the supplier field to describe the origins of the samples.<br />
-  A supplier could be a company, collaborator, or researcher in the lab.
-</p>
+<div class="row">
+  <div class="span8">
+    <div class="alert alert-info">
+      <p id="box-help-text">
+        Use the supplier field to describe the origins of the samples.<br />
+        A supplier could be a company, collaborator, or researcher in the lab.
+      </p>
+    </div> 
+  </div>
+</div>
 <form class="form-horizontal" method="post" 
       action="./?next={{ redirect_to }}">
   {% csrf_token %}
