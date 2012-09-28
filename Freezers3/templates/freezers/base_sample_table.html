@@ -44,6 +44,11 @@
           title="Edit sample">
         <i class="icon-edit"></i>
       </a>
+      <a class="btn btn-mini"
+         href={% url freezers.views.move_sample_select_freezer s.id %}
+         title="Move sample">
+        <i class="icon-share"></i>
+      </a>
       <a class="btn btn-danger btn-mini"
         href="{% url freezers.views.remove_sample_from_index s.id %}?next={% firstof request.path '/freezers/samples/' %}{% if querystring %}{{ querystring }}{% endif %}"
           title="Remove sample">

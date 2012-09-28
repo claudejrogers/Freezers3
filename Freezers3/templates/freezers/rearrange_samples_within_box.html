@@ -42,60 +42,38 @@
 </div>
 <div class="row">
   <div class="span12">
-    <div id="box-menu-wrapper">
-      <ul class="nav nav-pills">
-        <li>
-          <a href={% url freezers.views.select_sample_location fid %}
-             title="Click here to select another location in this freezer">
-            Select another location
-          </a>
-        </li>
-        <li class="dropdown">
-          <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-            Actions
-            <b class="caret"></b>
-          </a>
-          <ul class="dropdown-menu">
-            <li>
-              <a href={% url freezers.views.move_box_select_freezer fid sid rid did bid %}
-                 title="Click here to move this box to another location">
-                Move box
-              </a>
-            </li>
-            <li>
-              <a href={% url freezers.views.select_box_location fid sid rid did bid %}
-                 title="Click here to add new samples, or view current samples, in this box">
-                Add/view samples
-              </a>
-            </li>
-            <li>
-              <a href={% url freezers.views.rearrange_samples_within_box fid sid rid did bid %}
-                 title="Click here to move samples around within this box">
-                Drag-and-drop samples
-              </a>
-            </li>
-            <li>
-              <a href={% url freezers.views.select_samples_in_box fid sid rid did bid %}
-                 title="Click here to select then move samples">
-                Select samples to move
-              </a>
-            </li>
-          </ul>
-        </li>
-        <li class="active">
-          <a href="#">
-            Current: Drag-and-drop samples
-          </a>
-        </li>
-      </ul>
-    </div>
+    <a class="btn"
+       href={% url freezers.views.select_sample_location fid %}
+       title="Click here to select another location in this freezer">
+       <i class="icon-align-justify"></i>
+    </a>
+    <a class="btn"
+       href={% url freezers.views.move_box_select_freezer fid sid rid did bid %}
+       title="Click here to move this box to another location">
+      <i class="icon-arrow-right"></i>
+    </a>
+    <a class="btn"
+       href={% url freezers.views.select_box_location fid sid rid did bid %}
+       title="Click here to add new samples, or view current samples, in this box">
+      <i class="icon-plus"></i>
+    </a>
+    <a class="btn disabled"
+       href={% url freezers.views.rearrange_samples_within_box fid sid rid did bid %}
+       title="Click here to move samples around within this box">
+      <i class="icon-move"></i>
+    </a>
+    <a class="btn"
+       href={% url freezers.views.select_samples_in_box fid sid rid did bid %}
+       title="Click here to select then move samples">
+      <i class="icon-share"></i>
+    </a>    
   </div>
 </div>
 {% if msg %}
   <div class="alert alert-error">{{ msg }}</div>
 {% endif %}
 <div class="row">
-  <div class="span5">
+  <div class="span5 move-box-form">
     <a id="trashcan" class="btn btn-danger btn-large" href="#">
       <i class="icon-trash icon-white"></i>
     </a>

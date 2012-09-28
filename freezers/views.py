@@ -1,3 +1,4 @@
+import logging
 from django.db import transaction
 from django.db.models import F
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -11,11 +12,14 @@ from freezers.models import *
 from freezers.forms import *
 from freezers.view_helper import *
 
+log = logging.getLogger(__name__)
+
 @login_required
 def freezer_index(request):
     """
     List freezers in a table
     """
+    log.info("User %s visited page" % request.user.username)
     add_samples = request.GET.get('orig', '')
     freezer_list = Freezer.objects.all()
     for f in freezer_list:

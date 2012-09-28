@@ -181,6 +181,7 @@ class SampleTypeForm(ModelForm):
 
 class SampleLocation(models.Model):
     SPECIES_CHOICES = (
+        ('', '--------'),
         ('C. Elegans', 'C. Elegans'),
         ('Danio rerio', 'Danio rerio'),
         ('Drosophila', 'Drosophila'),
@@ -196,6 +197,7 @@ class SampleLocation(models.Model):
     )
 
     CELL_CHOICES = (
+        ('', '--------'),
         ('293-6E', '293-6E'),
         ('293F', '293F'),
         ('293T', '293T'),
