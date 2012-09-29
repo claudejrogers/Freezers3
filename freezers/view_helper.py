@@ -1,10 +1,13 @@
 import os
 import codecs
+import logging
 from django.db import connection
 from Freezers3.settings import MEDIA_ROOT, MEDIA_URL
 from freezers.models import *
 from freezers.utilities import getposition
 from freezers.remodel_helper import *
+
+log = logging.getLogger(__name__)
 
 def _freezer_filter(freezer, sn, rn=None, dn=None):
     if not rn:
@@ -373,3 +376,12 @@ def get_box_name_or_empty_string(fid, sid, rid, did, bid):
         bn = ''
     return bn
 
+def log_dict(adict):
+    s = "\t{\n"
+    for k, v in adict.iteritems():
+        s += "\t\t%r: %r\n" % (k, v)
+    s += "\t}"
+    return s
+
+def log_action(user, action, adict):
+    log.info("User %s %s:\n%s" % (user, action, log_dict(adict)))

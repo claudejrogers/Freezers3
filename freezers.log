@@ -1,5 +1,92 @@
-User cjrogers visited page
-User cjrogers visited page
-User cjrogers visited page
-[03/Aug/2012 09:45:13] INFO [freezers.views:22] User cjrogers visited page
-[03 Aug 2012 09:46:03] INFO [freezers.views:22] User cjrogers visited page
+[28 Sep 2012 20:36:29] INFO [freezers.view_helper:387] User cjrogers added freezer:
+	{
+		'phone_number': u''
+		'shelf_capacity': 5
+		'kind': u'\u221280 \u2103'
+		'rack_capacity': 4
+		'box_capacity': 4
+		'drawer_capacity': 4
+		'building_room_number': u'116 Church'
+		'box_width': 9
+		'product_number': u''
+		'serial_number': u''
+		'model': u'Revco Ultima II'
+		'cell_capacity': 81
+		'manufacturer': u'Fisher'
+	}
+[28 Sep 2012 20:37:35] INFO [freezers.view_helper:387] User cjrogers added new sample type:
+	{
+		'sample_type': u'Protein'
+	}
+[28 Sep 2012 20:37:56] INFO [freezers.view_helper:387] User cjrogers added new supplier:
+	{
+		'organization': u'California Institute of Technology'
+		'first_name': u'Claude'
+		'last_name': u'Rogers'
+		'email': u'cjrogers@caltech.edu'
+		'pi_lab_supplier': u'Hsieh-Wilson Lab'
+	}
+[28 Sep 2012 20:38:31] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010101L to 0x101010112L:
+	{
+		'number_of_aliquots': 18
+		'solvent': u'PBS'
+		'name': u'RPTPsigma'
+		'comments': u''
+		'production_date': datetime.date(2012, 9, 28)
+		'starting_aliquot_number': 1
+		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: California Institute of Technology>
+		'sample_type': <SampleType: Protein>
+		'volume': 10.0
+		'host_cell_name': u'293T'
+		'user': <User: cjrogers>
+		'date_added': datetime.date(2012, 9, 28)
+		'concentration': 10.0
+		'species': u'Human'
+		'catalog_number': u''
+	}
+[28 Sep 2012 20:59:34] INFO [freezers.view_helper:387] User cjrogers edited supplier:
+	{
+		'organization': u'Caltech'
+		'first_name': u'Claude'
+		'last_name': u'Rogers'
+		'email': u'cjrogers@caltech.edu'
+		'pi_lab_supplier': u'Hsieh-Wilson Lab'
+	}
+[28 Sep 2012 22:32:32] INFO [freezers.view_helper:387] User cjrogers added new sample type:
+	{
+		'sample_type': u'Plasmids'
+	}
+[28 Sep 2012 22:33:39] INFO [freezers.view_helper:387] User cjrogers added freezer:
+	{
+		'phone_number': u''
+		'shelf_capacity': 1
+		'kind': u'liq. N\u2082'
+		'rack_capacity': 5
+		'box_capacity': 9
+		'drawer_capacity': 1
+		'building_room_number': u'116 Church'
+		'box_width': 9
+		'product_number': u''
+		'serial_number': u''
+		'model': u'R2D2'
+		'cell_capacity': 81
+		'manufacturer': u''
+	}
+[28 Sep 2012 22:34:41] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010201L to 0x101010209L:
+	{
+		'number_of_aliquots': 9
+		'solvent': u'Water'
+		'name': u'pcDNA3.0'
+		'comments': u''
+		'production_date': datetime.date(2012, 9, 28)
+		'starting_aliquot_number': 1
+		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: Caltech>
+		'sample_type': <SampleType: Plasmids>
+		'volume': 10.0
+		'host_cell_name': u''
+		'user': <User: cjrogers>
+		'date_added': datetime.date(2012, 9, 28)
+		'concentration': 1.0
+		'species': u''
+		'catalog_number': u''
+	}

@@ -1,4 +1,3 @@
-import logging
 from django.db import transaction
 from django.db.models import F
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -12,14 +11,12 @@ from freezers.models import *
 from freezers.forms import *
 from freezers.view_helper import *
 
-log = logging.getLogger(__name__)
 
 @login_required
 def freezer_index(request):
     """
     List freezers in a table
     """
-    log.info("User %s visited page" % request.user.username)
     add_samples = request.GET.get('orig', '')
     freezer_list = Freezer.objects.all()
     for f in freezer_list:
@@ -37,6 +34,12 @@ def add_freezer(request):
         form = FreezerForm(request.POST)
         if form.is_valid():
             form.save()
+            # Log when user adds new freezer
+            log_action(
+                request.user.username, 
+                "added freezer", 
+                form.cleaned_data
+            )
             return HttpResponseRedirect('/freezers/')
     else:
         form = FreezerForm()
@@ -44,6 +47,9 @@ def add_freezer(request):
 
 @login_required
 def select_sample_location(request, freezer_id):
+    """
+    For a selected freezer, print sublocations.
+    """
     fid = freezer_id
     f = get_object_or_404(Freezer, pk=fid)
     fname = f.__unicode__()
@@ -161,6 +167,13 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
             for container in containers:
                 redirect_url += container + '/'
             redirect_url += 'samples/' if len(containers) < 5 else ''
+            # Log whenever a user adds a sample
+            log_action(
+                request.user.username,
+                "added samples in addresses %s to %s" % (hex(first_address), 
+                                                         hex(last_address)),
+                form.cleaned_data
+            )
             return HttpResponseRedirect(redirect_url)
     else:
         form = AddSampleForm()
@@ -176,6 +189,9 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
 @login_required
 def sample_index_by_location(request, freezer_id, shelf_id=None,
                              rack_id=None, drawer_id=None):
+    """
+    List samples for a given freezer by specific location.
+    """
     query = request.GET.get('query', '')
     msg, querystring = '', ''
     f = get_object_or_404(Freezer, pk=freezer_id)
@@ -296,6 +312,12 @@ def add_supplier(request):
         form = PILabSupplierForm(request.POST)
         if form.is_valid():
             form.save()
+            # Log when user adds new supplier
+            log_action(
+                request.user.username, 
+                "added new supplier", 
+                form.cleaned_data
+            )
             return HttpResponseRedirect(redirect_to)
     else:
         form = PILabSupplierForm()
@@ -320,6 +342,12 @@ def add_sample_type(request):
         form = SampleTypeForm(request.POST)
         if form.is_valid():
             form.save()
+            # Log when user adds new sample type
+            log_action(
+                request.user.username, 
+                "added new sample type", 
+                form.cleaned_data
+            )
             return HttpResponseRedirect(redirect_to)
     else:
         form = SampleTypeForm()
@@ -377,6 +405,12 @@ def edit_freezer(request, freezer_id):
             f.serial_number = form.cleaned_data['serial_number']
             f.phone_number = form.cleaned_data['phone_number']
             f.attrsave()
+            # Log when user changes freezer details
+            log_action(
+                request.user.username, 
+                "edited freezer %s" % freezer_id, 
+                form.cleaned_data
+            )
             return HttpResponseRedirect('/freezers/%s/' % freezer_id)
     else:
         form = FreezerEditForm(instance=f)
@@ -390,6 +424,12 @@ def edit_supplier(request, supplier_id):
         form = PILabSupplierForm(request.POST, instance=supplier)
         if form.is_valid():
             form.save()
+            # Log when user edits supplier
+            log_action(
+                request.user.username,
+                "edited supplier",
+                form.cleaned_data
+            )
             return HttpResponseRedirect('/freezers/suppliers/%s/' % supplier_id)
     else:
         form = PILabSupplierForm(instance=supplier)
@@ -438,6 +478,12 @@ def edit_sample(request, sample_id):
                         if form.cleaned_data['remove']:
                             samp.remove_sample()
             form.save()
+            # Log when user edits samples
+            log_action(
+                request.user.username,
+                "edited %d samples" % i,
+                form.cleaned_data
+            )
             if msgform.is_valid():
                 if msgform.cleaned_data['send_message']:
                     msgargs = {
@@ -1043,7 +1089,20 @@ def remove_sample(request, sample_id):
     sh, ra, dr, bo, ce = getposition(ad)
     redirect_url = '/freezers/%d/%d/%d/%d/%d/rearrange-samples/' % (fid,
                                                              sh, ra, dr, bo)
+    name = s.name,
+    aliquot = s.aliquot_number
     s.remove_sample()
+    # Log when user removes samples
+    log_action(
+        request.user.username,
+        "removed sample",
+        {
+            "sample_name": name,
+            "aliquot_number": aliquot,
+            "freezer_id": s.freezer.id,
+            "address": hex(s.address)
+        }
+    )
     return HttpResponseRedirect(redirect_url)
 
 @login_required
@@ -1195,9 +1254,19 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
 def remove_selected_samples(request):
     sample_query = request.GET.getlist('sample')
     redirect_url = request.GET.get('next', '/freezers/')
-    for sid in sample_query:
+    log_dict = {}
+    for i, sid in enumerate(sample_query):
         s = get_object_or_404(SampleLocation, pk=sid)
+        log_dict["sample_%d_name" % i] = s.name
+        log_dict["sample_%d_aliquot" % i] = s.aliquot_number
+        log_dict["sample_%d_address" % i] = hex(s.address)
         s.remove_sample()
+    # Log the deletion of samples
+    log_action(
+        request.user.username,
+        "deleted samples",
+        log_dict
+    )
     return HttpResponseRedirect(redirect_url)
 
 @login_required
@@ -1265,12 +1334,18 @@ def remodel_freezer(request, freezer_id, shelf_id, rack_id=None, drawer_id=None,
 
 @login_required
 def export_samples(request):
+    """
+    Allow users to export their sample info as tsv file
+    """
     user = request.user
     exportSampleHelper(user)
     return HttpResponseRedirect('/freezers/home/%s/' % user.id)
 
 @login_required
 def delete_file(request, file_id):
+    """
+    Allow users to delete files
+    """
     dirname = os.path.join(MEDIA_ROOT, request.user.username)
     filename = os.listdir(dirname)[int(file_id) - 1]
     os.remove(os.path.join(dirname, filename))
@@ -1278,6 +1353,9 @@ def delete_file(request, file_id):
 
 @login_required
 def name_box(request, freezer_id, addr):
+    """
+    Allow users to name their boxes for easy id
+    """
     box_name = request.GET.get('box_name', '')
     addr = int(addr)
     if box_name and request.is_ajax():
@@ -1301,6 +1379,10 @@ def remove_freezer(request, freezer_id):
     # move samples to 'Removed'
     locs = SampleLocation.objects.filter(freezer=freezer_id)
     s = locs.filter(occupied=True)
+    # for logging
+    num_samples = len(s)
+    fname = f.__unicode__()
+    # actually remove samples 
     [sample.remove_sample() for sample in s]
     # delete sample locations
     cur = connection.cursor()
@@ -1308,6 +1390,15 @@ def remove_freezer(request, freezer_id):
                 (freezer_id,))
     # delete freezer
     f.delete()
+    # Log when user removes freezer
+    log_action(
+        request.user.username,
+        "removed freezer %s" % (freezer_id),
+        {
+            "freezer_name": fname,
+            "affedted_samples": num_samples
+        }
+    )
     return HttpResponseRedirect('/freezers/')
 
 @login_required
@@ -1319,7 +1410,20 @@ def show_box(request, freezer_id, address):
 def remove_sample_from_index(request, sample_id):
     url = request.GET.get('next', '/freezers/samples/')
     s = get_object_or_404(SampleLocation, pk=sample_id)
+    name = s.name
+    aliquot = s.aliquot_number
     s.remove_sample()
+    # Log when user removes samples
+    log_action(
+        request.user.username,
+        "removed sample",
+        {
+            "sample_name": name,
+            "aliquot_number": aliquot,
+            "freezer_id": s.freezer.id,
+            "address": hex(s.address)
+        }
+    )
     return HttpResponseRedirect(url)
 
 @login_required
@@ -1351,5 +1455,16 @@ def return_removed_sample(request, removed_id):
     sl.addsample(**kwargs)
     fid = sl.freezer.id
     s, r, d, b, c = getposition(sl.address)
-    rs.delete()
+    rs.delete
+    # Log when user returns samples
+    log_action(
+        request.user.username,
+        "returned a removed sample to former location",
+        {
+            "sample_name": sl.name,
+            "aliquot_number": sl.aliquot_number,
+            "freezer_id": sl.freezer.id,
+            "address": hex(sl.address)
+        }
+    )
     return HttpResponseRedirect('/freezers/%d/%d/%d/%d/%d/' % (fid, s, r, d, b))    
