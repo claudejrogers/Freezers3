@@ -9,19 +9,22 @@ from freezers.remodel_helper import *
 
 log = logging.getLogger(__name__)
 
+
 def _freezer_filter(freezer, sn, rn=None, dn=None):
     if not rn:
-        return sorted(set(r for (s,r,d,b) in freezer if s == sn))
+        return sorted(set(r for (s, r, d, b) in freezer if s == sn))
     elif not dn:
-        return sorted(set(d for (s,r,d,b) in freezer
-                           if s == sn and r == rn))
-    return sorted(set(b for (s,r,d,b) in freezer
-                       if s == sn and r == rn and d == dn))
+        return sorted(set(d for (s, r, d, b) in freezer
+                          if s == sn and r == rn))
+    return sorted(set(b for (s, r, d, b) in freezer
+                      if s == sn and r == rn and d == dn))
+
 
 class FreezerHelper:
     def __init__(self, location_id, sublocation_list):
         self.location_id = location_id
         self.sublocation_list = sublocation_list
+
 
 def freezerViewHelper(freezer_id):
     master = []
@@ -34,7 +37,7 @@ def freezerViewHelper(freezer_id):
     freezer = [map(int, (r, s, d, b)) for r, s, d, b, cell in
                [getposition(address[0]) for address in c.fetchall()]
                if cell == 1]
-    for shelf in sorted(set(s for (s,r,d,b) in freezer)):
+    for shelf in sorted(set(s for (s, r, d, b) in freezer)):
         rack_list = []
         for rack in _freezer_filter(freezer, shelf):
             drawer_list = []
@@ -50,6 +53,7 @@ def freezerViewHelper(freezer_id):
         shelf_item = FreezerHelper(shelf, rack_list)
         master.append(shelf_item)
     return master
+
 
 class LocationHelper:
     def __init__(self, loc_id, index, link, width, capacity, occupied,
@@ -84,16 +88,21 @@ class LocationHelper:
             return u"Move sample to Cell %s" % loc_name
         return u"EMPTY: Add sample to Cell %s" % loc_name
 
+
 def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
                   url_suffix, url_prefix='freezers'):
     # Get Sample locations for this box
     this_box = getaddress(map(int, (shelf_id, rack_id, drawer_id, box_id, 1)))
     next_box = this_box + 0x0100
-    sl = SampleLocation.objects.filter(freezer=freezer_id,
-                                       address__gte=this_box,
-                                       address__lt=next_box).exclude(
-                                       occupied=None).extra(
-                                       order_by = ['address'])
+    sl = SampleLocation.objects.filter(
+        freezer=freezer_id,
+        address__gte=this_box,
+        address__lt=next_box
+    ).exclude(
+        occupied=None
+    ).extra(
+        order_by=['address']
+    )
     # an array to help javascript color sample locations
     slo = map(lambda x: 1 if x else 0, [s.occupied for s in sl])
     capacity = sl[0].cell_capacity
@@ -111,13 +120,13 @@ def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
             samp = s
         else:
             occupied_class = "unoccupied_sample"
-            link = '/'.join(('', url_prefix, freezer_id,shelf_id, rack_id,
+            link = '/'.join(('', url_prefix, freezer_id, shelf_id, rack_id,
                              drawer_id, box_id, str(i + 1), url_suffix))
         if (i + 1) % width != 0:
-            ml.append(LocationHelper(v, (i+1), link, width, capacity,
+            ml.append(LocationHelper(v, (i + 1), link, width, capacity,
                                      occupied_class, sample=samp))
         else:
-            ml.append(LocationHelper(v, (i+1), link, width, capacity,
+            ml.append(LocationHelper(v, (i + 1), link, width, capacity,
                                      occupied_class, sample=samp))
             occupied.append(ml)
             ml = []
@@ -128,6 +137,7 @@ def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
         'width': width
     }
     return context
+
 
 def getSampleAliquots(s):
     s_aliquot_number = s.aliquot_number
@@ -140,12 +150,13 @@ def getSampleAliquots(s):
             samples.append(samp)
     return samples
 
+
 def getMoveSampleDisplay(s, samples=None):
     if not samples:
         samples = getSampleAliquots(s)
     bw = s.box_width
     cap = s.cell_capacity
-    width = max(bw, cap/bw)
+    width = max(bw, cap / bw)
     display_list = []
     ml = []
     for i, s in enumerate(samples, start=1):
@@ -164,24 +175,26 @@ def getMoveSampleDisplay(s, samples=None):
     }
     return context
 
+
 def getSampleList(index, fsl, nsamples):
-    fsl = fsl.extra(order_by = ['address'])
+    fsl = fsl.extra(order_by=['address'])
     sample_list = [fsl[index]]
     try:
-        for i in xrange(nsamples-1):
-            current = fsl[index+i+1]
+        for i in xrange(nsamples - 1):
+            current = fsl[index + i + 1]
             prev = sample_list[i]
             cp = getposition(current.address)
             pp = getposition(prev.address)
             if pp[4] + 1 == cp[4]:
                 sample_list.append(current)
-            elif pp[3]+1 == cp[3] and pp[4] == prev.cell_capacity and cp[4] == 1:
+            elif pp[3] + 1 == cp[3] and pp[4] == prev.cell_capacity and cp[4] == 1:
                 sample_list.append(current)
             else:
-                return getSampleList(index+i+1, fsl, nsamples)
+                return getSampleList(index + i + 1, fsl, nsamples)
         return sample_list
     except IndexError:
         return []
+
 
 def remodelFreezerHelper(field_to_change, new_value, fid, sid, rid=None,
                          did=None, bid=None, box_dim=None):
@@ -195,6 +208,7 @@ def remodelFreezerHelper(field_to_change, new_value, fid, sid, rid=None,
         'new_cell_capacity': remodel_cells_in_freezer_subsection,
     }
     return case[field_to_change](**args)
+
 
 class AbbrLocation:
     def __init__(self, freezer_id, addr):
@@ -211,12 +225,14 @@ class AbbrLocation:
         return "%s Shelf %d Rack %d Drawer %d Box %d" % (fname, self.sid,
                                                          self.rid, self.did,
                                                          self.bid)
+
     def get_box_name(self):
         try:
             bn = BoxName.objects.get(freezer=self.fid, box_addr=self.traddr)
             return bn.name
         except:
             return ''
+
 
 def searchHelper(s, query):
     """
@@ -276,13 +292,14 @@ def searchHelper(s, query):
                 continue
             elif term == 'pils':
                 pils = PILabSupplier.objects.filter(
-                                            pi_lab_supplier__icontains=fkq)
+                    pi_lab_supplier__icontains=fkq
+                )
                 for pil in pils:
                     r |= set(s.filter(pi_lab_supplier=pil.id))
                 res.append(r)
                 continue
             else:
-                q = fkq # who knows wtf the user did. Try our best below
+                q = fkq  # who knows wtf the user did. Try our best below
         for attr in attrs:
             kwarg = {attr: q}
             r |= set(s.filter(**kwarg))
@@ -302,6 +319,7 @@ def searchHelper(s, query):
     for rset in res:
         results &= rset
     return sorted(results, key=lambda x: x.id)
+
 
 def _get_loc(address, box_width, cell_capacity):
     pos = list(getposition(address))
@@ -335,13 +353,13 @@ def exportSampleHelper(user):
 
     lines = (
         '\t'.join(map(unicode, (name,
-                 get_name(Freezer, freezer) + ': ' + _get_loc(address,
-                                                              box_width,
-                                                              cell_capacity),
+                  get_name(Freezer, freezer) + ': ' + _get_loc(address,
+                                                               box_width,
+                                                               cell_capacity),
                   aliquot_number, solvent, concentration, volume,
                   get_name(SampleType, sample_type), species, host_cell_name,
                   get_name(PILabSupplier, pi_lab_supplier), date_added,
-                  production_date, comments)))+'\n'
+                  production_date, comments))) + '\n'
         for (name, freezer, address, box_width, cell_capacity, aliquot_number,
              solvent, sample_type, species, host_cell_name, pi_lab_supplier,
              date_added, production_date, concentration, volume, comments)
@@ -354,11 +372,12 @@ def exportSampleHelper(user):
     f.writelines(lines)
     f.close()
 
+
 def getUserFiles(user):
     dirname = os.path.join(MEDIA_ROOT, user.username)
     if os.path.isdir(dirname):
         files = [dict(zip(('url', 'filename'),
-                          ('/'.join((MEDIA_URL+user.username, f)),
+                          ('/'.join((MEDIA_URL + user.username, f)),
                            f)))
                  for f in os.listdir(dirname)
                  if f.endswith('.txt') or f.endswith('.png')]
@@ -368,6 +387,7 @@ def getUserFiles(user):
         has_text = False
     return files, has_text
 
+
 def get_box_name_or_empty_string(fid, sid, rid, did, bid):
     traddr = (int(sid) << 24) + (int(rid) << 16) + (int(did) << 8) + int(bid)
     try:
@@ -376,12 +396,14 @@ def get_box_name_or_empty_string(fid, sid, rid, did, bid):
         bn = ''
     return bn
 
+
 def log_dict(adict):
     s = "\t{\n"
     for k, v in adict.iteritems():
         s += "\t\t%r: %r\n" % (k, v)
     s += "\t}"
     return s
+
 
 def log_action(user, action, adict):
     log.info("User %s %s:\n%s" % (user, action, log_dict(adict)))

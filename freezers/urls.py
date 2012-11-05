@@ -1,6 +1,7 @@
-from django.conf.urls.defaults import patterns, include, url
+from django.conf.urls.defaults import patterns  # , include, url
 
-urlpatterns = patterns('freezers.views',
+urlpatterns = patterns(
+    'freezers.views',
     (r'^$', 'freezer_index'),
     (r'^new/$', 'add_freezer'),
     (r'^(?P<freezer_id>\d+)/select-location/$', 'select_sample_location'),
@@ -20,9 +21,9 @@ urlpatterns = patterns('freezers.views',
         'add_samples_to_freezer'),
     (r'^(?P<freezer_id>\d+)/samples/$', 'sample_index_by_location'),
     (r'^(?P<freezer_id>\d+)/(?P<shelf_id>\d+)/samples/$',
-         'sample_index_by_location'),
+     'sample_index_by_location'),
     (r'^(?P<freezer_id>\d+)/(?P<shelf_id>\d+)/(?P<rack_id>\d+)/samples/$',
-         'sample_index_by_location'),
+     'sample_index_by_location'),
     (r'^(?P<freezer_id>\d+)/(?P<shelf_id>\d+)/(?P<rack_id>\d+)/(?P<drawer_id>\d+)/samples/$',
         'sample_index_by_location'),
     (r'^samples/$', 'sample_index'),
@@ -107,5 +108,3 @@ urlpatterns = patterns('freezers.views',
     (r'^delete-file/(?P<file_id>\d+)/$', 'delete_file'),
     (r'^(?P<freezer_id>\d+)/(?P<addr>\d+)/name-box/$', 'name_box'),
 )
-
-

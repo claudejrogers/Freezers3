@@ -22,9 +22,35 @@ var drawSampleLocations = function(slo, curr_samp) {
   	ctx.closePath();
   	ctx.stroke()
   	ctx.fill();
-  }  
+  }
 }
 
+var drawPreview = function(slo, curr_samp) {
+  var occup = slo;
+  var currSample = curr_samp;
+  for (var i=1; i<=occup.length; i++) {
+  	var selector = "#canvas" + i;
+  	var ctx = $(selector)[0].getContext("2d");
+  	ctx.lineWidth = 2;
+  	if (occup[i-1] === 1) {
+  	  ctx.strokeStyle = "rgba(0,128,0,1)";
+  	  ctx.fillStyle="rgba(108,205,0,1)";
+  	} else {
+  	  ctx.strokeStyle = "rgba(0,0,0,1)";
+      ctx.fillStyle="#e0e0e0";
+  	}
+  	if (i === currSample) {
+  	  ctx.lineWidth = 5;
+  	  ctx.strokeStyle = "rgba(255,0,0,1)";
+      ctx.fillStyle="#e0e0e0";
+  	}
+  	ctx.beginPath();
+  	ctx.arc(5,5,3.3,0,Math.PI*2,true);
+  	ctx.closePath();
+  	ctx.stroke()
+  	ctx.fill();
+  }
+}
 var drawAliquots = function(alonum) {
   for (var i=1; i<=alonum; i++) {
   	var selector = "#canv" + i;
@@ -37,7 +63,7 @@ var drawAliquots = function(alonum) {
   	ctx.closePath();
   	ctx.stroke()
   	ctx.fill();
-  }  
+  }
 }
 
 var drawProgressBar = function(percent_free, fid) {
