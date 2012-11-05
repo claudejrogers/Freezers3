@@ -28,11 +28,13 @@ class SampleLocationAdmin(admin.ModelAdmin):
         'occupied'
     )
     ordering = ['id']
-    list_filter = ('occupied',
-                   'freezer',
-                   'name',
-                   'sample_type',
-                   'date_added')
+    list_filter = (
+        'occupied',
+        'freezer',
+        'name',
+        'sample_type',
+        'date_added'
+    )
     raw_id_fields = ('freezer',)
 
     def verbose_address(self, obj):
@@ -53,7 +55,6 @@ class BoxNameAdminForm(forms.ModelForm):
         if ba.startswith('0x'):
             mba = int(ba, 16)
             if 'box_addr' in self._errors:
-                print "IN!!"
                 del self._errors["box_addr"]
         else:
             try:

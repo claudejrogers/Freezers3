@@ -90,3 +90,35 @@
 		'species': u''
 		'catalog_number': u''
 	}
+[25 Oct 2012 15:17:28] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010113L to 0x101010124L:
+	{
+		'number_of_aliquots': 18
+		'solvent': u'PBS'
+		'name': u'TrkA'
+		'comments': u''
+		'production_date': datetime.date(2012, 10, 25)
+		'starting_aliquot_number': 1
+		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: Caltech>
+		'sample_type': <SampleType: Protein>
+		'volume': 10.0
+		'host_cell_name': u''
+		'user': <User: cjrogers>
+		'date_added': datetime.date(2012, 10, 25)
+		'concentration': 10.0
+		'species': u'Human'
+		'catalog_number': u''
+	}
+[25 Oct 2012 15:24:02] INFO [freezers.view_helper:387] User cjrogers removed sample:
+	{
+		'freezer_id': 1
+		'aliquot_number': 9
+		'address': '0x101010209L'
+		'sample_name': u'pcDNA3.0'
+	}
+[25 Oct 2012 15:24:43] INFO [freezers.view_helper:387] User cjrogers returned a removed sample to former location:
+	{
+		'freezer_id': 1
+		'aliquot_number': 9
+		'address': '0x101010209L'
+		'sample_name': u'pcDNA3.0'
+	}
