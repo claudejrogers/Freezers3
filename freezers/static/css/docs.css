@@ -34,17 +34,17 @@
   width: 400px;  
 }
 ul.markless {
-    list-style-type: none;
+  list-style-type: none;
 }
 .rack li {
-    display: inline-block;
-    vertical-align: top;
+  display: inline-block;
+  vertical-align: top;
 }
 .inline {
-    display: inline-block;
+  display: inline-block;
 }
 .drawer li {
-    display: block;
+  display: block;
 }
 .table tbody tr:hover td,
 .table tbody tr:hover th {
@@ -69,4 +69,12 @@ div#boxDisplay {
 }
 .move-box-form {
   margin-top:2em;
+}
+
+.location {
+  cursor: pointer;
+}
+
+#location {
+  cursor: pointer;
 }
