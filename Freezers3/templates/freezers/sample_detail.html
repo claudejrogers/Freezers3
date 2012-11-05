@@ -47,7 +47,8 @@
         <dt>Sample</dt>
         <dd>{{ sample.name }}</dd>
         <dt>Location</dt>
-        <dd>{{ sample }}</dd>
+        <dd id="location"
+            title="Click to toggle between alphanumeric and numeric cell ids">{{ sample }}</dd>
         <dt>Aliquot</dt>
         <dd>
           {% if sample.aliquot_number %}
@@ -113,7 +114,7 @@
         <dd>{{ sample.production_date|date:"SHORT_DATE_FORMAT" }}</dd>
         <dt>Concentration</dt>
         <dd>
-          {{ sample.concentration }}  
+          {{ sample.concentration }}
           {% if "cell" in sample.sample_type|lower %}
             10^6 cells/ml
           {% else %}
@@ -133,4 +134,20 @@
     </dl>
   </div>
 </div>
+<script>
+  $('#location').click(function() {
+    var $this = $('#location');
+    var cell = "{{ sample.cell_location }}";
+    var cell_verbose = "{{ sample.cell_location_name }}";
+    var loclist = $this.text().split(' ');
+    var curr_cell_name = loclist.pop(-1);
+    if (curr_cell_name == cell)
+      loclist.push(cell_verbose);
+    else
+      loclist.push(cell);
+    $this.text(loclist.join(' '));
+  })
+  // var loclist = verbose_name.split(' ');
+  // var old_cell = loclist.pop(-1);
+</script>
 {% endblock %}
