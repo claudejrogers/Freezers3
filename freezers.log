@@ -1,9 +1,21 @@
-[28 Sep 2012 20:36:29] INFO [freezers.view_helper:387] User cjrogers added freezer:
+[23 Jan 2013 21:28:27] INFO [freezers.view_helper:409] User cjrogers added new sample type:
+	{
+		'sample_type': u'Protein'
+	}
+[23 Jan 2013 21:28:45] INFO [freezers.view_helper:409] User cjrogers added new supplier:
+	{
+		'organization': u'Caltech'
+		'first_name': u'Claude'
+		'last_name': u'Rogers'
+		'email': u'cjrogers@caltech.edu'
+		'pi_lab_supplier': u'LHW lab'
+	}
+[23 Jan 2013 21:29:12] INFO [freezers.view_helper:409] User cjrogers added freezer:
 	{
 		'phone_number': u''
 		'shelf_capacity': 5
 		'kind': u'\u221280 \u2103'
-		'rack_capacity': 4
+		'rack_capacity': 5
 		'box_capacity': 4
 		'drawer_capacity': 4
 		'building_room_number': u'116 Church'
@@ -14,111 +26,21 @@
 		'cell_capacity': 81
 		'manufacturer': u'Fisher'
 	}
-[28 Sep 2012 20:37:35] INFO [freezers.view_helper:387] User cjrogers added new sample type:
+[23 Jan 2013 21:29:50] INFO [freezers.view_helper:409] User cjrogers added samples in addresses 0x101010101L to 0x10101010aL:
 	{
-		'sample_type': u'Protein'
-	}
-[28 Sep 2012 20:37:56] INFO [freezers.view_helper:387] User cjrogers added new supplier:
-	{
-		'organization': u'California Institute of Technology'
-		'first_name': u'Claude'
-		'last_name': u'Rogers'
-		'email': u'cjrogers@caltech.edu'
-		'pi_lab_supplier': u'Hsieh-Wilson Lab'
-	}
-[28 Sep 2012 20:38:31] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010101L to 0x101010112L:
-	{
-		'number_of_aliquots': 18
+		'number_of_aliquots': 10
 		'solvent': u'PBS'
-		'name': u'RPTPsigma'
+		'name': u'PTP-sigma'
 		'comments': u''
-		'production_date': datetime.date(2012, 9, 28)
+		'production_date': datetime.date(2013, 1, 23)
 		'starting_aliquot_number': 1
-		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: California Institute of Technology>
+		'pi_lab_supplier': <PILabSupplier: LHW lab: Caltech>
 		'sample_type': <SampleType: Protein>
 		'volume': 10.0
 		'host_cell_name': u'293T'
 		'user': <User: cjrogers>
-		'date_added': datetime.date(2012, 9, 28)
-		'concentration': 10.0
+		'date_added': datetime.date(2013, 1, 23)
+		'concentration': 0.1
 		'species': u'Human'
 		'catalog_number': u''
-	}
-[28 Sep 2012 20:59:34] INFO [freezers.view_helper:387] User cjrogers edited supplier:
-	{
-		'organization': u'Caltech'
-		'first_name': u'Claude'
-		'last_name': u'Rogers'
-		'email': u'cjrogers@caltech.edu'
-		'pi_lab_supplier': u'Hsieh-Wilson Lab'
-	}
-[28 Sep 2012 22:32:32] INFO [freezers.view_helper:387] User cjrogers added new sample type:
-	{
-		'sample_type': u'Plasmids'
-	}
-[28 Sep 2012 22:33:39] INFO [freezers.view_helper:387] User cjrogers added freezer:
-	{
-		'phone_number': u''
-		'shelf_capacity': 1
-		'kind': u'liq. N\u2082'
-		'rack_capacity': 5
-		'box_capacity': 9
-		'drawer_capacity': 1
-		'building_room_number': u'116 Church'
-		'box_width': 9
-		'product_number': u''
-		'serial_number': u''
-		'model': u'R2D2'
-		'cell_capacity': 81
-		'manufacturer': u''
-	}
-[28 Sep 2012 22:34:41] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010201L to 0x101010209L:
-	{
-		'number_of_aliquots': 9
-		'solvent': u'Water'
-		'name': u'pcDNA3.0'
-		'comments': u''
-		'production_date': datetime.date(2012, 9, 28)
-		'starting_aliquot_number': 1
-		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: Caltech>
-		'sample_type': <SampleType: Plasmids>
-		'volume': 10.0
-		'host_cell_name': u''
-		'user': <User: cjrogers>
-		'date_added': datetime.date(2012, 9, 28)
-		'concentration': 1.0
-		'species': u''
-		'catalog_number': u''
-	}
-[25 Oct 2012 15:17:28] INFO [freezers.view_helper:387] User cjrogers added samples in addresses 0x101010113L to 0x101010124L:
-	{
-		'number_of_aliquots': 18
-		'solvent': u'PBS'
-		'name': u'TrkA'
-		'comments': u''
-		'production_date': datetime.date(2012, 10, 25)
-		'starting_aliquot_number': 1
-		'pi_lab_supplier': <PILabSupplier: Hsieh-Wilson Lab: Caltech>
-		'sample_type': <SampleType: Protein>
-		'volume': 10.0
-		'host_cell_name': u''
-		'user': <User: cjrogers>
-		'date_added': datetime.date(2012, 10, 25)
-		'concentration': 10.0
-		'species': u'Human'
-		'catalog_number': u''
-	}
-[25 Oct 2012 15:24:02] INFO [freezers.view_helper:387] User cjrogers removed sample:
-	{
-		'freezer_id': 1
-		'aliquot_number': 9
-		'address': '0x101010209L'
-		'sample_name': u'pcDNA3.0'
-	}
-[25 Oct 2012 15:24:43] INFO [freezers.view_helper:387] User cjrogers returned a removed sample to former location:
-	{
-		'freezer_id': 1
-		'aliquot_number': 9
-		'address': '0x101010209L'
-		'sample_name': u'pcDNA3.0'
 	}

@@ -49,7 +49,7 @@ class Freezer(models.Model):
         self.percent_free = 0.0
         super(Freezer, self).save(*args, **kwargs)
         cur = connection.cursor()
-        t = [(0, self.id, getaddress((s, r, d, b, c)),
+        t = [(False, self.id, getaddress((s, r, d, b, c)),
               self.box_width, self.cell_capacity)
              for s in xrange(1, self.shelf_capacity+1)
              for r in xrange(1, self.rack_capacity+1)
@@ -63,15 +63,16 @@ class Freezer(models.Model):
 
     def calcOccupied(self, *args, **kwargs):
         cur = connection.cursor()
-        t = float(len(cur.execute("""SELECT id FROM freezers_samplelocation
-                WHERE freezer_id = %s AND occupied IS NOT
-                NULL""" % self.id).fetchall()))
-        self.unoccupied = int(len(cur.execute("""SELECT id FROM
-                freezers_samplelocation WHERE freezer_id = %s AND
-                occupied = 0""" % self.id).fetchall()))
-        self.occupied = int(len(cur.execute("""SELECT id FROM
-                freezers_samplelocation WHERE freezer_id = %s AND
-                occupied = 1""" % self.id).fetchall()))
+        cur.execute("""SELECT COUNT(*) FROM freezers_samplelocation
+                       WHERE freezer_id = %s AND occupied IS NOT
+                       NULL""" % self.id)
+        t = float(cur.fetchone()[0])
+        cur.execute("""SELECT COUNT(*) FROM freezers_samplelocation WHERE
+                    freezer_id = %s AND occupied = False""" % self.id)
+        self.unoccupied = int(cur.fetchone()[0])
+        cur.execute("""SELECT COUNT(*) FROM freezers_samplelocation WHERE
+                    freezer_id = %s AND occupied = True""" % self.id)
+        self.occupied = int(cur.fetchone()[0])
         self.percent_free = self.unoccupied / t * 100
         super(Freezer, self).save(*args, **kwargs)
 
@@ -212,7 +213,7 @@ class SampleLocation(models.Model):
         ('SF9', 'SF9'),
         ('TOP-10', 'TOP-10'),
     )
-    # Location information 
+    # Location information
     occupied = models.NullBooleanField(default=False)
     freezer = models.ForeignKey(Freezer)
     address = models.BigIntegerField()

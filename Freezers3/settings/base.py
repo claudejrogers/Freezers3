@@ -1,8 +1,11 @@
 # Django settings for Freezers3 project.
 import os
 
-PROJECT_SETTINGS_DIR = os.path.dirname(__file__)
-PROJECT_DIR = os.path.split(PROJECT_SETTINGS_DIR)[0]
+PROJECT_SETTINGS_PATH = os.path.dirname(__file__)
+PROJECT_ROOT = os.path.abspath(os.path.join(PROJECT_SETTINGS_PATH, '..'))
+
+def root(*args):
+    return os.path.abspath(os.path.join(PROJECT_ROOT, *args))
 
 DEBUG = True
 TEMPLATE_DEBUG = DEBUG
@@ -13,16 +16,16 @@ ADMINS = (
 
 MANAGERS = ADMINS
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
-        'NAME': os.path.join(PROJECT_SETTINGS_DIR, 'db.sqlite3'),                      # Or path to database file if using sqlite3.
-        # 'USER': '',
-        # 'PASSWORD': '',
-        # 'HOST': '',                      # Set to empty string for localhost.
-        # 'PORT': '',                      # Set to empty string for default.
-    }
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',  # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+#         'NAME': root('db.sqlite3'),                      # Or path to database file if using sqlite3.
+#         # 'USER': '',
+#         # 'PASSWORD': '',
+#         # 'HOST': '',                      # Set to empty string for localhost.
+#         # 'PORT': '',                      # Set to empty string for default.
+#     }
+# }
 
 # Local time zone for this installation. Choices can be found here:
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
@@ -50,11 +53,11 @@ USE_I18N = True
 USE_L10N = True
 
 # If you set this to False, Django will not use timezone-aware datetimes.
-USE_TZ = False  # True
+USE_TZ = True
 
 # Absolute filesystem path to the directory that will hold user-uploaded files.
 # Example: "/home/media/media.lawrence.com/media/"
-MEDIA_ROOT = os.path.join(PROJECT_SETTINGS_DIR, 'resources')
+MEDIA_ROOT = root('resources')
 
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
@@ -65,7 +68,7 @@ MEDIA_URL = 'http://127.0.0.1:8000/resources/'
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
-STATIC_ROOT = os.path.join(PROJECT_DIR, 'freezers/static') + '/'
+STATIC_ROOT = root('../freezers/static') + '/'
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
@@ -116,7 +119,7 @@ TEMPLATE_DIRS = (
     # Put strings here, like "/home/html/django_templates" or "C:/www/django/templates".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
-    os.path.join(PROJECT_SETTINGS_DIR, 'templates')
+    root('templates')
 )
 
 INSTALLED_APPS = (
