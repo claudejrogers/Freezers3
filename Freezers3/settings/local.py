@@ -1,7 +1,5 @@
 # Local Django settings
 
-SQLITE3 = False
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -13,3 +11,11 @@ DATABASES = {
     }
 }
 
+# URL that handles the media served from MEDIA_ROOT. Make sure to use a
+# trailing slash.
+# Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
+MEDIA_URL = 'http://127.0.0.1:8000/resources/'
+
+# URL prefix for static files.
+# Example: "http://media.lawrence.com/static/"
+STATIC_URL = 'http://127.0.0.1:8000/static/'
