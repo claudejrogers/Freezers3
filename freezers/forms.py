@@ -18,7 +18,7 @@ class AddSampleForm(forms.Form):
                                 choices=SampleLocation.SPECIES_CHOICES)
     host_cell_name = forms.ChoiceField(required=False,
                                        choices=SampleLocation.CELL_CHOICES)
-    user = forms.ModelChoiceField(queryset=User.objects.order_by('username'), 
+    user = forms.ModelChoiceField(queryset=User.objects.order_by('username'),
                                   help_text="*")
     pi_lab_supplier = forms.ModelChoiceField(
                         queryset=PILabSupplier.objects.order_by(

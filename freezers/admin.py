@@ -1,3 +1,5 @@
+from django import forms
+from django.contrib import admin
 from freezers.models import Freezer
 from freezers.models import SampleType
 from freezers.models import SampleLocation
@@ -5,8 +7,6 @@ from freezers.models import PILabSupplier
 from freezers.models import SampleType
 from freezers.models import BoxName
 from freezers.utilities import getposition
-from django.contrib import admin
-from django import forms
 
 class FreezerAdmin(admin.ModelAdmin):
     list_display = (
@@ -64,7 +64,7 @@ class BoxNameAdminForm(forms.ModelForm):
         if mba is not None:
             self.data['box_addr'] = unicode(mba)
         cleaned_data['box_addr'] = unicode(mba)
-        return cleaned_data 
+        return cleaned_data
 
 class BoxNameAdmin(admin.ModelAdmin):
     list_display = (

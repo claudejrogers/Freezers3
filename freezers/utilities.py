@@ -2,13 +2,7 @@ _MASK = 0xFF
 _SHIFTS = (32, 24, 16, 8, 0)
 
 def getaddress(position):
-    address = 0
-    for i, p in enumerate(position):
-        address += (p << _SHIFTS[i])
-    return address
+    return sum(p << s for p, s in zip(position, _SHIFTS))
 
 def getposition(address):
-    position = []
-    for s in _SHIFTS:
-        position.append((address >> s) & _MASK)
-    return tuple(position)
+    return tuple((address >> s) & _MASK for s in _SHIFTS)

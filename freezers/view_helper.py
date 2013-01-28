@@ -142,9 +142,12 @@ def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
 def getSampleAliquots(s):
     s_aliquot_number = s.aliquot_number
     samples = [s]
-    sa = SampleLocation.objects.filter(freezer=s.freezer.id, occupied=True,
-                                       name=s.name, address__gt=s.address,
-                                       aliquot_number__gt=s.aliquot_number)
+    sa = SampleLocation.objects.filter(freezer=s.freezer.id,
+                                       occupied=True,
+                                       name=s.name,
+                                       address__gt=s.address,
+                                       aliquot_number__gt=s.aliquot_number
+                                       ).order_by("pk")
     for i, samp in enumerate(sa, start=1):
         if samp.aliquot_number == s_aliquot_number + i:
             samples.append(samp)
@@ -345,7 +348,8 @@ def exportSampleHelper(user):
                    aliquot_number, solvent, sample_type_id, species,
                    host_cell_name, pi_lab_supplier_id, date_added,
                    production_date, concentration, volume, comments
-                   FROM freezers_samplelocation WHERE user_id = %s''',
+                   FROM freezers_samplelocation WHERE user_id = %s
+                   ORDER BY id''',
                 (user.id,))
     samples = cur.fetchall()
 

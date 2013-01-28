@@ -16,7 +16,7 @@ def freezer_index(request):
     List freezers in a table
     """
     add_samples = request.GET.get('orig', '')
-    freezer_list = Freezer.objects.all()
+    freezer_list = Freezer.objects.all().order_by("pk")
     for f in freezer_list:
         f.calcOccupied()
     c = {
@@ -136,7 +136,8 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
             fsl = SampleLocation.objects.filter(freezer=freezer_id,
                                                 occupied=False,
                                                 address__gte=faddress,
-                                                address__lt=laddress)
+                                                address__lt=laddress
+                                                ).order_by("pk")
             n = int(form.cleaned_data['number_of_aliquots'])
             smp_lst = getSampleList(0, fsl, n)
             if not smp_lst:
@@ -222,10 +223,12 @@ def sample_index_by_location(request, freezer_id, shelf_id=None,
         s = SampleLocation.objects.filter(freezer=freezer_id,
                                           occupied=True,
                                           address__gte=first_address,
-                                          address__lt=end_address)
+                                          address__lt=end_address
+                                          ).order_by("pk")
     else:  # user wants to see all samples in freezer
         s = SampleLocation.objects.filter(freezer=freezer_id,
-                                          occupied=True)
+                                          occupied=True
+                                          ).order_by("pk")
     if query:
         sample_list = searchHelper(s, query)
         querystring = '&query=%s' % query.replace(' ', '+')
@@ -280,7 +283,7 @@ def sample_index(request):
     """
     msg, querystring = '', ''
     query = request.GET.get('query', '')
-    s = SampleLocation.objects.filter(occupied=True)
+    s = SampleLocation.objects.filter(occupied=True).order_by("pk")
     if query:
         querystring = '&query=%s' % query.replace(' ', '+')
         sample_list = searchHelper(s, query)
@@ -346,7 +349,7 @@ def supplier_index(request):
     """
     List PILabSupplier Objects
     """
-    suppliers_list = PILabSupplier.objects.all()
+    suppliers_list = PILabSupplier.objects.all().order_by("pk")
     c = {
         'request': request,
         'suppliers_list': suppliers_list
@@ -497,12 +500,13 @@ def edit_sample(request, sample_id):
                     address__gt=s.address,
                     address__lt=next_address,
                     aliquot_number__gt=s.aliquot_number
-                )
+                ).order_by("pk")
                 for i, samp in enumerate(samples, start=1):
                     if samp.aliquot_number == s.aliquot_number + i:
                         samp.name = form.cleaned_data['name']
                         samp.aliquot_number = form.cleaned_data['aliquot_number'] + i
                         samp.solvent = form.cleaned_data['solvent']
+                        samp.sample_type = form.cleaned_data['sample_type']
                         samp.species = form.cleaned_data['species']
                         samp.user = form.cleaned_data['user']
                         samp.pi_lab_supplier = form.cleaned_data['pi_lab_supplier']
@@ -642,7 +646,8 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
     fll = SampleLocation.objects.filter(freezer=freezer_id,
                                         occupied=False,
                                         address__gte=first_address,
-                                        address__lt=end_address)
+                                        address__lt=end_address
+                                        ).order_by("pk")
     samples = getSampleAliquots(s) if int(atoa) else [s]
     n = len(samples)
     loc_list = getSampleList(0, fll, n)
@@ -655,7 +660,8 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
         )])
         if cell_id:
             flobj = SampleLocation.objects.filter(freezer=freezer_id,
-                                                  address=first_address)[0]
+                                                  address=first_address
+                                                  ).order_by("pk")[0]
             if int(atoa):
                 lname += " starting at"
             lname += " cell %s" % flobj.cell_location_name()
@@ -729,14 +735,17 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
     laddress = faddress + 0x0100
     ms = SampleLocation.objects.filter(freezer=fid,
                                        address__gte=faddress,
-                                       address__lt=laddress)
+                                       address__lt=laddress
+                                       ).order_by("pk")
     msdict = dict((s.address & 0xFF, s) for s in ms if s.occupied)
 
     tbaddr = getaddress(map(int, (shelf_id, rack_id, drawer_id, box_id, 0)))
     ftaddr = tbaddr + 1
     ltaddr = ftaddr + 0x0100
     ts = SampleLocation.objects.filter(freezer=freezer_id,
-                                       address__gte=ftaddr, address__lt=ltaddr)
+                                       address__gte=ftaddr,
+                                       address__lt=ltaddr
+                                       ).order_by("pk")
     remodel_flag = 0 if ms.count() == ts.count() else 1
     tsdict = {}
     for s in ts:
@@ -775,7 +784,7 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
 
         ts = SampleLocation.objects.filter(freezer=freezer_id,
                                            address__gte=ftaddr,
-                                           address__lt=ltaddr)
+                                           address__lt=ltaddr).order_by("pk")
         for s in ts:
             cell = s.address & 0xFF
             if cell in msdict:
@@ -786,7 +795,7 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
                              tdim)
         ms = SampleLocation.objects.filter(freezer=fid,
                                            address__gte=faddress,
-                                           address__lt=laddress)
+                                           address__lt=laddress).order_by("pk")
     for s in ms:
         cell = s.address & 0xFF
         if cell in tsdict:
@@ -838,7 +847,7 @@ def search(request, option=None, query=None):
             redirect_url += '?query=%s' % query.replace(' ', '+')
             return HttpResponseRedirect(redirect_url)
     if query:
-        s = SampleLocation.objects.filter(occupied=True)
+        s = SampleLocation.objects.filter(occupied=True).order_by("pk")
         results = searchHelper(s, query)
         querystring = '&query=%s' % query.replace(' ', '+')
         if not results:
@@ -939,7 +948,7 @@ def removed_index(request, query=None):
             return HttpResponseRedirect(
                 '/freezers/removed/%(search)s/' % form.cleaned_data)
         else:
-            results = RemovedSample.objects.all()
+            results = RemovedSample.objects.all().order_by("pk")
     else:
         form = SimpleSearchForm()
         if query:
@@ -960,7 +969,7 @@ def removed_index(request, query=None):
             for pil in pils:
                 results += RemovedSample.objects.filter(
                     pi_lab_supplier=pil.id
-                )
+                ).order_by("pk")
             sts = SampleType.objects.filter(sample_type__icontains=query)
             for st in sts:
                 results += RemovedSample.objects.filter(
@@ -1025,7 +1034,7 @@ def homepage(request, user_id):
         return redirect('/freezers/home/%s/' % request.user.id)
     query = request.GET.get('query', '')
     msg, querystring = '', ''
-    s = SampleLocation.objects.filter(user=user)
+    s = SampleLocation.objects.filter(user=user).order_by("pk")
     if query:
         querystring = '&query=%s' % query.replace(' ', '+')
         samples = searchHelper(s, query)
@@ -1155,7 +1164,8 @@ def swap_samples(request, sample_id, cell_id):
     address = ad >> 8
     addr = (address << 8) + int(cell_id)
     o = SampleLocation.objects.filter(freezer=fid,
-                                      occupied=False, address=addr)
+                                      occupied=False,
+                                      address=addr).order_by("pk")
     if o.count() == 1:
         s.move(o[0])
     return HttpResponseRedirect(redirect_url)
@@ -1303,7 +1313,8 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
     fll = SampleLocation.objects.filter(freezer=freezer_id,
                                         occupied=False,
                                         address__gte=first_address,
-                                        address__lt=end_address)
+                                        address__lt=end_address
+                                        ).order_by("pk")
     n = len(samples)
     loc_list = getSampleList(0, fll, n)
     if not loc_list:
@@ -1315,7 +1326,8 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
         )])
         if cell_id:
             flobj = SampleLocation.objects.filter(freezer=freezer_id,
-                                                  address=first_address)[0]
+                                                  address=first_address
+                                                  ).order_by("pk")[0]
             if int(atoa):
                 lname += " starting at"
             lname += " cell %s" % flobj.cell_location_name()
