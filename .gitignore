@@ -2,3 +2,5 @@
 *.swp
 *.sqlite3
 *.log
+*.DS_Store
+*.ropeproject
