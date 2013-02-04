@@ -1,12 +1,9 @@
 from django import forms
 from django.contrib import admin
-from freezers.models import Freezer
-from freezers.models import SampleType
-from freezers.models import SampleLocation
-from freezers.models import PILabSupplier
-from freezers.models import SampleType
-from freezers.models import BoxName
+from freezers.models import (Freezer, SampleType, SampleLocation,
+                             PILabSupplier, BoxName)
 from freezers.utilities import getposition
+
 
 class FreezerAdmin(admin.ModelAdmin):
     list_display = (
@@ -15,6 +12,7 @@ class FreezerAdmin(admin.ModelAdmin):
         'manufacturer',
         'model'
     )
+
 
 class SampleLocationAdmin(admin.ModelAdmin):
     list_display = (
@@ -39,11 +37,12 @@ class SampleLocationAdmin(admin.ModelAdmin):
 
     def verbose_address(self, obj):
         p = zip(('Shelf', 'Rack', 'Drawer', 'Box', 'Cell'),
-                 getposition(obj.address))
-        cell = p.pop(-1)
+                getposition(obj.address))
+        p.pop(-1)
         p.append(('Cell', obj.cell_location_name()))
         return ' '.join(map(lambda x: ' '.join(map(unicode, x)), p))
     verbose_address.short_description = 'Location'
+
 
 class BoxNameAdminForm(forms.ModelForm):
     class Meta:
@@ -66,6 +65,7 @@ class BoxNameAdminForm(forms.ModelForm):
         cleaned_data['box_addr'] = unicode(mba)
         return cleaned_data
 
+
 class BoxNameAdmin(admin.ModelAdmin):
     list_display = (
         'freezer',
@@ -76,10 +76,9 @@ class BoxNameAdmin(admin.ModelAdmin):
 
     def box_address(self, obj):
         p = zip(('Shelf', 'Rack', 'Drawer', 'Box', 'Cell'),
-                 getposition(obj.box_addr << 8))
+                getposition(obj.box_addr << 8))
         p.pop()
         return ' '.join(map(lambda x: ' '.join(map(unicode, x)), p))
-
 
 
 admin.site.register(Freezer, FreezerAdmin)
@@ -87,4 +86,3 @@ admin.site.register(PILabSupplier)
 admin.site.register(SampleType)
 admin.site.register(SampleLocation, SampleLocationAdmin)
 admin.site.register(BoxName, BoxNameAdmin)
-

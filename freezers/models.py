@@ -6,6 +6,7 @@ from django.contrib.localflavor.us.models import PhoneNumberField
 from django.contrib.auth.models import User
 from freezers.utilities import getaddress, getposition
 
+
 class Freezer(models.Model):
     FREEZER_KIND_CHOICES = (
         (u'liq. N\u2082', u'liq. N\u2082'),
@@ -40,6 +41,10 @@ class Freezer(models.Model):
 
     @transaction.autocommit
     def save(self, *args, **kwargs):
+        """
+        Override save such that creation of a freezer generates samplelocation
+        entries corresponding to the freezer.
+        """
         self.occupied = 0
         self.unoccupied = (self.shelf_capacity *
                            self.rack_capacity *
@@ -51,17 +56,21 @@ class Freezer(models.Model):
         cur = connection.cursor()
         t = [(False, self.id, getaddress((s, r, d, b, c)),
               self.box_width, self.cell_capacity)
-             for s in xrange(1, self.shelf_capacity+1)
-             for r in xrange(1, self.rack_capacity+1)
-             for d in xrange(1, self.drawer_capacity+1)
-             for b in xrange(1, self.box_capacity+1)
-             for c in xrange(1, self.cell_capacity+1)]
+             for s in xrange(1, self.shelf_capacity + 1)
+             for r in xrange(1, self.rack_capacity + 1)
+             for d in xrange(1, self.drawer_capacity + 1)
+             for b in xrange(1, self.box_capacity + 1)
+             for c in xrange(1, self.cell_capacity + 1)]
         cur.executemany("""INSERT INTO freezers_samplelocation (occupied,
             freezer_id, address, box_width, cell_capacity)
             values (%s, %s, %s, %s, %s)""", t)
         transaction.commit()
 
-    def calcOccupied(self, *args, **kwargs):
+    def calc_occupied(self, *args, **kwargs):
+        """
+        Calculate the free, occupied and total number of samplelocations
+        associated with this freezer.
+        """
         cur = connection.cursor()
         cur.execute("""SELECT COUNT(*) FROM freezers_samplelocation
                        WHERE freezer_id = %s AND occupied IS NOT
@@ -77,6 +86,9 @@ class Freezer(models.Model):
         super(Freezer, self).save(*args, **kwargs)
 
     def attrsave(self, *args, **kwargs):
+        """
+        A save method that doesn't affect sample location data.
+        """
         super(Freezer, self).save(*args, **kwargs)
 
     def __unicode__(self):
@@ -89,6 +101,9 @@ class Freezer(models.Model):
 class FreezerForm(ModelForm):
 
     def clean(self):
+        """
+        Custom validation to ensure user input is correct.
+        """
         super(FreezerForm, self).clean()
         cleaned_data = self.cleaned_data
         cc = cleaned_data.get('cell_capacity', None)
@@ -96,7 +111,7 @@ class FreezerForm(ModelForm):
         for cap in ('shelf_capacity', 'rack_capacity', 'drawer_capacity',
                     'box_capacity', 'cell_capacity'):
             cn = cleaned_data.get(cap, None)
-            if cn != None:
+            if cn is not None:
                 if isinstance(cn, int):
                     if cn > 255:
                         msg = 'Value entered too large.'
@@ -166,6 +181,9 @@ class PILabSupplierForm(ModelForm):
 
 
 class SampleType(models.Model):
+    """
+    The type of sample: protein, antibody, plasmid, etc.
+    """
     sample_type = models.CharField(max_length=100)
 
     def __unicode__(self):
@@ -181,6 +199,9 @@ class SampleTypeForm(ModelForm):
 
 
 class SampleLocation(models.Model):
+    """
+    Store details about the location and sample information if occupied.
+    """
     SPECIES_CHOICES = (
         ('', '--------'),
         ('C. Elegans', 'C. Elegans'),
@@ -243,14 +264,21 @@ class SampleLocation(models.Model):
     comments = models.CharField(null=True, blank=True, max_length=500)
 
     def cell_location(self):
+        """
+        Return the numeric value for the cell.
+        """
         return int(self.address) & 0xFF
 
     def cell_location_name(self):
+        """
+        Represent sample location with an alphanumeric identifier (AO8, ...)
+        for the cell
+        """
         dim = int(self.box_width)
         total = int(self.cell_capacity)
-        length = max(dim, total/dim)
+        length = max(dim, total / dim)
         n = int(self.address) & 0xFF
-        c = chr(65 + ((n - 1)/length))
+        c = chr(65 + ((n - 1) / length))
         x = n % length or length
         return u"%s%02d" % (c, x)
 
@@ -259,6 +287,9 @@ class SampleLocation(models.Model):
                   aliquot_number=None, solvent=None,
                   species=None, host_cell_name=None,
                   catalog_number=None, date_removed=None, comments=None):
+        """
+        Add sample information to this location.
+        """
         self.name = name
         self.sample_type = sample_type
         self.user = user
@@ -278,6 +309,9 @@ class SampleLocation(models.Model):
         self.save()
 
     def clearsample(self):
+        """
+        Remove sample information for this location.
+        """
         self.name = None
         self.sample_type = None
         self.user = None
@@ -297,6 +331,9 @@ class SampleLocation(models.Model):
         self.save()
 
     def remove_sample(self):
+        """
+        Remove sample information for this location and it to removed samples.
+        """
         try:
             m = Message.objects.get(sample=self)
         except Message.DoesNotExist:
@@ -329,6 +366,9 @@ class SampleLocation(models.Model):
         self.clearsample()
 
     def move(self, other):
+        """
+        Move a sample information to another location.
+        """
         other.addsample(self.name, self.sample_type, self.user,
                         self.pi_lab_supplier, self.date_added,
                         self.production_date, self.concentration,
@@ -347,8 +387,11 @@ class SampleLocation(models.Model):
 
 
 class EditSampleForm(ModelForm):
-    apply_to_aliquots = forms.BooleanField(required=False, initial=False,
-                    help_text="Check to apply changes to remaining aliquots.")
+    apply_to_aliquots = forms.BooleanField(
+        required=False,
+        initial=False,
+        help_text="Check to apply changes to remaining aliquots."
+    )
     remove = forms.BooleanField(required=False, initial=False)
 
     class Meta:
@@ -369,6 +412,9 @@ class EditSampleForm(ModelForm):
 
 
 class RemovedSample(models.Model):
+    """
+    Store information about samples no longer in the freezer.
+    """
     freezer = models.ForeignKey(Freezer)
     address = models.BigIntegerField()
     name = models.CharField(max_length=100)
@@ -396,10 +442,16 @@ class RemovedSample(models.Model):
 
 
 class Message(models.Model):
+    """
+    Allow users to pass messages about samples to each other.
+    """
     sender = models.ForeignKey(User, related_name='from_user')
     receiver = models.ForeignKey(User, related_name='to_user')
-    subject = models.CharField(blank=True, max_length=100,
-                help_text="Message will be sent to sample owner.")
+    subject = models.CharField(
+        blank=True,
+        max_length=100,
+        help_text="Message will be sent to sample owner."
+    )
     message = models.TextField(blank=True)
     date = models.DateTimeField(blank=True, default=datetime.now())
     sample = models.ForeignKey(SampleLocation, blank=True, null=True)
@@ -414,8 +466,11 @@ class Message(models.Model):
 
 
 class MessageForm(ModelForm):
-    send_message = forms.BooleanField(required=False, initial=False,
-                     help_text="Check this box to send message.")
+    send_message = forms.BooleanField(
+        required=False,
+        initial=False,
+        help_text="Check this box to send message."
+    )
 
     class Meta:
         model = Message
@@ -426,15 +481,14 @@ class MessageForm(ModelForm):
         }
 
 
-
 class BoxName(models.Model):
     freezer = models.ForeignKey(Freezer)
     box_addr = models.IntegerField()
     name = models.CharField(max_length=50)
+
 
 class BoxNameForm(ModelForm):
 
     class Meta:
         model = BoxName
         exclude = ('freezer', 'box_addr')
-

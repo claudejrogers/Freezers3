@@ -18,7 +18,7 @@ def freezer_index(request):
     add_samples = request.GET.get('orig', '')
     freezer_list = Freezer.objects.all().order_by("pk")
     for f in freezer_list:
-        f.calcOccupied()
+        f.calc_occupied()
     c = {
         'request': request,
         'add_samples': add_samples,
@@ -58,7 +58,7 @@ def select_sample_location(request, freezer_id):
     fid = freezer_id
     f = get_object_or_404(Freezer, pk=fid)
     fname = f.__unicode__()
-    shelves = freezerViewHelper(freezer_id)
+    shelves = freezer_view_helper(freezer_id)
     c = {
         'request': request,
         'freezer_id': freezer_id,
@@ -80,8 +80,9 @@ def select_box_location(request, freezer_id, shelf_id, rack_id, drawer_id,
     """
     f = get_object_or_404(Freezer, pk=freezer_id)
     fname = f.__unicode__()
-    c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                      "add-samples/")
+    c = get_box_context(
+        freezer_id, shelf_id, rack_id, drawer_id, box_id, "add-samples/"
+    )
     bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id, drawer_id,
                                       box_id)
     c.update({
@@ -114,8 +115,9 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
               'request': request})
 
     if box_id:  # display box
-        bc = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                           "add-samples/")
+        bc = get_box_context(
+            freezer_id, shelf_id, rack_id, drawer_id, box_id, "add-samples/"
+        )
         bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id,
                                           drawer_id, box_id)
         bc['curr_samp'] = int(cell_id)
@@ -139,7 +141,7 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
                                                 address__lt=laddress
                                                 ).order_by("pk")
             n = int(form.cleaned_data['number_of_aliquots'])
-            smp_lst = getSampleList(0, fsl, n)
+            smp_lst = get_sample_list(0, fsl, n)
             if not smp_lst:
                 msg = "There is only enough space for %d sample(s) in this \
                        location." % len(fsl)
@@ -230,7 +232,7 @@ def sample_index_by_location(request, freezer_id, shelf_id=None,
                                           occupied=True
                                           ).order_by("pk")
     if query:
-        sample_list = searchHelper(s, query)
+        sample_list = search_helper(s, query)
         querystring = '&query=%s' % query.replace(' ', '+')
         if not sample_list:
             msg = 'No hits for %s' % query
@@ -286,7 +288,7 @@ def sample_index(request):
     s = SampleLocation.objects.filter(occupied=True).order_by("pk")
     if query:
         querystring = '&query=%s' % query.replace(' ', '+')
-        sample_list = searchHelper(s, query)
+        sample_list = search_helper(s, query)
         if not sample_list:
             sample_list = s
             msg = "No hits for %s" % query
@@ -568,7 +570,7 @@ def move_sample_select_freezer(request, sample_id, msg=None):
     First, select a freezer, then click a sublocation in the freezer
     """
     s = get_object_or_404(SampleLocation, pk=sample_id)
-    c = getMoveSampleDisplay(s)
+    c = get_move_sample_display(s)
     c.update({'sid': sample_id, 'sample': s, 'request': request})
     if not s.occupied:
         raise Http404
@@ -579,7 +581,7 @@ def move_sample_select_freezer(request, sample_id, msg=None):
             atoa = 1 if form.cleaned_data['apply_to_aliquots'] else 0
             f = get_object_or_404(Freezer, pk=freezer_id)
             fname = f.__unicode__()
-            shelves = freezerViewHelper(freezer_id)
+            shelves = freezer_view_helper(freezer_id)
             c.update({
                 'form': form,
                 'fid': freezer_id,
@@ -607,11 +609,13 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
     if box_id and not cell_id:
         # Show user the selected box, prompt user to select a cell_ID
         f = get_object_or_404(Freezer, pk=freezer_id)
-        c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                          "move/%s/" % atoa, 'freezers/samples/%s' % sample_id)
+        c = get_box_context(
+            freezer_id, shelf_id, rack_id, drawer_id, box_id,
+            "move/%s/" % atoa, 'freezers/samples/%s' % sample_id
+        )
         bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id,
                                           drawer_id, box_id)
-        c.update(getMoveSampleDisplay(s))
+        c.update(get_move_sample_display(s))
         c.update({
             'request': request,
             'sample_id': sample_id,
@@ -648,9 +652,9 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
                                         address__gte=first_address,
                                         address__lt=end_address
                                         ).order_by("pk")
-    samples = getSampleAliquots(s) if int(atoa) else [s]
+    samples = get_sample_aliquots(s) if int(atoa) else [s]
     n = len(samples)
-    loc_list = getSampleList(0, fll, n)
+    loc_list = get_sample_list(0, fll, n)
     if not loc_list:
         f = get_object_or_404(Freezer, pk=freezer_id)
         fname = f.__unicode__()
@@ -691,8 +695,8 @@ def move_box_select_freezer(request, freezer_id, shelf_id, rack_id, drawer_id,
     origin = "%s: Shelf %s Rack %s Drawer %s Box %s" % (of.__unicode__(),
                                                         shelf_id, rack_id,
                                                         drawer_id, box_id)
-    c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                      "#/")
+    c = get_box_context(freezer_id, shelf_id, rack_id,
+                        drawer_id, box_id, "#/")
     bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id, drawer_id,
                                       box_id)
     c.update({'fr': freezer_id, 'sh': shelf_id, 'ra': rack_id, 'dr': drawer_id,
@@ -704,7 +708,7 @@ def move_box_select_freezer(request, freezer_id, shelf_id, rack_id, drawer_id,
             f = form.cleaned_data['select_freezer']
             fid = f.id
             fname = f.__unicode__()
-            shelves = freezerViewHelper(fid)
+            shelves = freezer_view_helper(fid)
             box_address = getaddress(map(int, (freezer_id, shelf_id, rack_id,
                                                drawer_id, box_id)))
             c.update({
@@ -778,9 +782,9 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
         mdim = ms[0].box_width
         tcap = ts[0].cell_capacity
         tdim = ts[0].box_width
-        remodelFreezerHelper('new_cell_capacity', mcap, int(freezer_id),
-                             int(shelf_id), int(rack_id), int(drawer_id),
-                             int(box_id), mdim)
+        remodel_freezer_helper('new_cell_capacity', mcap, int(freezer_id),
+                               int(shelf_id), int(rack_id), int(drawer_id),
+                               int(box_id), mdim)
 
         ts = SampleLocation.objects.filter(freezer=freezer_id,
                                            address__gte=ftaddr,
@@ -791,8 +795,8 @@ def move_box(request, box_address, freezer_id, shelf_id, rack_id, drawer_id,
                 msdict[cell].move(s)
 
         fr, sh, dr, ra, bo = getposition(box_address)
-        remodelFreezerHelper('new_cell_capacity', tcap, fr, sh, dr, ra, bo,
-                             tdim)
+        remodel_freezer_helper('new_cell_capacity', tcap, fr, sh, dr, ra, bo,
+                               tdim)
         ms = SampleLocation.objects.filter(freezer=fid,
                                            address__gte=faddress,
                                            address__lt=laddress).order_by("pk")
@@ -848,7 +852,7 @@ def search(request, option=None, query=None):
             return HttpResponseRedirect(redirect_url)
     if query:
         s = SampleLocation.objects.filter(occupied=True).order_by("pk")
-        results = searchHelper(s, query)
+        results = search_helper(s, query)
         querystring = '&query=%s' % query.replace(' ', '+')
         if not results:
             results = None
@@ -879,7 +883,7 @@ def search(request, option=None, query=None):
 def select_region_to_edit(request, freezer_id):
     f = Freezer.objects.get(pk=freezer_id)
     fname = f.__unicode__()
-    shelves = freezerViewHelper(freezer_id)
+    shelves = freezer_view_helper(freezer_id)
     c = {
         'request': request,
         'freezer_id': freezer_id,
@@ -923,8 +927,8 @@ def edit_freezer_region(request, freezer_id, shelf_id, rack_id=None,
                               (freezer_id, shelf_id, rack_id, drawer_id,
                                box_id))
                 try:
-                    remodelFreezerHelper(field_to_change, new_value,
-                                         *loc_ids, box_dim=box_dim)
+                    remodel_freezer_helper(field_to_change, new_value,
+                                           *loc_ids, box_dim=box_dim)
                     return HttpResponseRedirect(
                         '/freezers/%s/select-sample-location/' % freezer_id)
                 except RemodelException, e:
@@ -1029,7 +1033,11 @@ def homepage(request, user_id):
     """
     User's homepage.
     """
-    user = get_object_or_404(User, pk=user_id)
+    # user = get_object_or_404(User, pk=user_id)
+    try:
+        user = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return redirect('/freezers/home/%s/' % request.user.id)
     if request.user != user:
         return redirect('/freezers/home/%s/' % request.user.id)
     query = request.GET.get('query', '')
@@ -1037,14 +1045,14 @@ def homepage(request, user_id):
     s = SampleLocation.objects.filter(user=user).order_by("pk")
     if query:
         querystring = '&query=%s' % query.replace(' ', '+')
-        samples = searchHelper(s, query)
+        samples = search_helper(s, query)
         if not samples:
             samples = s
             msg = "No hits for %s" % query
     else:
         samples = s
     messages = Message.objects.filter(receiver=user).order_by('-date')
-    files, has_text = getUserFiles(user)
+    files, has_text = get_user_files(user)
     cur = connection.cursor()
     cur.execute("""SELECT freezer_id, address
                          FROM freezers_samplelocation
@@ -1134,10 +1142,10 @@ def rearrange_samples_within_box(request, freezer_id, shelf_id, rack_id,
     """
     f = get_object_or_404(Freezer, pk=freezer_id)
     fname = f.__unicode__()
-    c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                      "#/swap-samples/")
-    bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id, drawer_id,
-                                      box_id)
+    c = get_box_context(freezer_id, shelf_id, rack_id,
+                        drawer_id, box_id, "#/swap-samples/")
+    bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id,
+                                      drawer_id, box_id)
     c.update({
         'request': request,
         'fname': fname,
@@ -1207,8 +1215,8 @@ def select_samples_in_box(request, freezer_id, shelf_id, rack_id, drawer_id,
     """
     f = get_object_or_404(Freezer, pk=freezer_id)
     fname = f.__unicode__()
-    c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                      "#/swap-samples/")
+    c = get_box_context(freezer_id, shelf_id, rack_id,
+                        drawer_id, box_id, "#/swap-samples/")
     bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id, drawer_id,
                                       box_id)
     c.update({
@@ -1238,7 +1246,7 @@ def move_selected_samples_select_freezer(request):
         return HttpResponseRedirect(redirect_to)
     sample_ids = map(int, sample_query)
     samples = [get_object_or_404(SampleLocation, pk=s) for s in sample_ids]
-    c = getMoveSampleDisplay(samples[0], samples)
+    c = get_move_sample_display(samples[0], samples)
     c.update({'request': request, 'query': query})
     if request.method == 'POST':
         form = MoveBoxForm(request.POST)
@@ -1246,7 +1254,7 @@ def move_selected_samples_select_freezer(request):
             freezer_id = form.cleaned_data['select_freezer'].id
             f = get_object_or_404(Freezer, pk=freezer_id)
             fname = f.__unicode__()
-            shelves = freezerViewHelper(freezer_id)
+            shelves = freezer_view_helper(freezer_id)
             c.update({
                 'form': form,
                 'fid': freezer_id,
@@ -1276,11 +1284,11 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
     if box_id and not cell_id:
         # Show user the selected box, prompt user to select a cell_ID
         f = get_object_or_404(Freezer, pk=freezer_id)
-        c = getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                          "", 'freezers/move-selected')
+        c = get_box_context(freezer_id, shelf_id, rack_id, drawer_id,
+                            box_id, "", 'freezers/move-selected')
         bn = get_box_name_or_empty_string(freezer_id, shelf_id, rack_id,
                                           drawer_id, box_id)
-        c.update(getMoveSampleDisplay(samples[0], samples))
+        c.update(get_move_sample_display(samples[0], samples))
         c.update({
             'request': request,
             'fname': f.__unicode__(),
@@ -1316,7 +1324,7 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
                                         address__lt=end_address
                                         ).order_by("pk")
     n = len(samples)
-    loc_list = getSampleList(0, fll, n)
+    loc_list = get_sample_list(0, fll, n)
     if not loc_list:
         f = get_object_or_404(Freezer, pk=freezer_id)
         fname = f.__unicode__()
@@ -1401,7 +1409,7 @@ def remodel_freezer(request, freezer_id, shelf_id, rack_id=None, drawer_id=None,
                                       box_id) if c is None])
             for i in range(length + 1):
                 try:
-                    remodelFreezerHelper(**args[i])
+                    remodel_freezer_helper(**args[i])
                 except RemodelException, e:
                     msg = e
                     break
@@ -1440,7 +1448,7 @@ def export_samples(request):
     Allow users to export their sample info as tsv file
     """
     user = request.user
-    exportSampleHelper(user)
+    export_sample_helper(user)
     return HttpResponseRedirect('/freezers/home/%s/' % user.id)
 
 

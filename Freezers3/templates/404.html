@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Freezer Inventory | Error 404: Page Not Found</title>
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 30px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/docs.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <header class="jumbotron masthead" id="overview">
+        <h1>Error 404: Page Not Found</h1>
+      </header>
+        <p>
+          What are you doing? 
+          Go <a href={% url freezers.views.home_link %}>home</a>.
+        </p>
+    </div>
+  </body>
+</html>

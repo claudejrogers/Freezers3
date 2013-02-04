@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}Error 500: Internal Server Error{% endblock %}
+
+{% block header %}Error 500: Internal Server Error{% endblock %}
+
+{% block content %}
+  <p>
+  A server error occurred.  Please contact the administrator.
+  Go <a href={% url Freezers3.views.root_view %}>home</a>.
+  </p>
+{% endblock %}

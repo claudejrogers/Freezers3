@@ -5,57 +5,24 @@ from django.db import connection
 from Freezers3.settings import MEDIA_ROOT, MEDIA_URL
 from freezers.models import *
 from freezers.utilities import getposition
-from freezers.remodel_helper import *
+import freezers.remodel_helper as rh
 
 log = logging.getLogger(__name__)
 
 
-def _freezer_filter(freezer, sn, rn=None, dn=None):
-    if not rn:
-        return sorted(set(r for (s, r, d, b) in freezer if s == sn))
-    elif not dn:
-        return sorted(set(d for (s, r, d, b) in freezer
-                          if s == sn and r == rn))
-    return sorted(set(b for (s, r, d, b) in freezer
-                      if s == sn and r == rn and d == dn))
-
-
 class FreezerHelper:
+    """
+    Basically a node struct. For the template...
+    """
     def __init__(self, location_id, sublocation_list):
         self.location_id = location_id
         self.sublocation_list = sublocation_list
 
 
-def freezerViewHelper(freezer_id):
-    master = []
-    c = connection.cursor()
-    c.execute("""SELECT box_addr, name FROM freezers_boxname WHERE
-                 freezer_id = %s""", (freezer_id,))
-    names = dict(c.fetchall())
-    c.execute("""SELECT address FROM freezers_samplelocation WHERE
-                 freezer_id = %s AND occupied IS NOT NULL""", (freezer_id,))
-    freezer = [map(int, (r, s, d, b)) for r, s, d, b, cell in
-               [getposition(address[0]) for address in c.fetchall()]
-               if cell == 1]
-    for shelf in sorted(set(s for (s, r, d, b) in freezer)):
-        rack_list = []
-        for rack in _freezer_filter(freezer, shelf):
-            drawer_list = []
-            for drawer in _freezer_filter(freezer, shelf, rack):
-                box_list = []
-                for box in _freezer_filter(freezer, shelf, rack, drawer):
-                    traddr = (shelf << 24) + (rack << 16) + (drawer << 8) + box
-                    box_list.append(FreezerHelper(box, names.get(traddr, '')))
-                drawer_item = FreezerHelper(drawer, box_list)
-                drawer_list.append(drawer_item)
-            rack_item = FreezerHelper(rack, drawer_list)
-            rack_list.append(rack_item)
-        shelf_item = FreezerHelper(shelf, rack_list)
-        master.append(shelf_item)
-    return master
-
-
 class LocationHelper:
+    """
+    Store information for samples in a box for template.
+    """
     def __init__(self, loc_id, index, link, width, capacity, occupied,
                  sample=None):
         self.loc_id = loc_id
@@ -89,8 +56,90 @@ class LocationHelper:
         return u"EMPTY: Add sample to Cell %s" % loc_name
 
 
-def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
-                  url_suffix, url_prefix='freezers'):
+class AbbrLocation:
+    def __init__(self, freezer_id, addr):
+        self.fid = freezer_id
+        self.traddr = addr
+        self.sid = (addr >> 24) & 0xFF
+        self.rid = (addr >> 16) & 0xFF
+        self.did = (addr >> 8) & 0xFF
+        self.bid = addr & 0xFF
+        self.name = self.get_box_name()
+
+    def location(self):
+        fname = Freezer.objects.get(pk=self.fid).__unicode__()
+        return "%s Shelf %d Rack %d Drawer %d Box %d" % (fname, self.sid,
+                                                         self.rid, self.did,
+                                                         self.bid)
+
+    def get_box_name(self):
+        try:
+            bn = BoxName.objects.get(freezer=self.fid, box_addr=self.traddr)
+            return bn.name
+        except:
+            return ''
+
+
+def _freezer_filter(freezer, sn, rn=None, dn=None):
+    if not rn:
+        return sorted(set(r for (s, r, d, b) in freezer if s == sn))
+    elif not dn:
+        return sorted(set(d for (s, r, d, b) in freezer
+                          if s == sn and r == rn))
+    return sorted(set(b for (s, r, d, b) in freezer
+                      if s == sn and r == rn and d == dn))
+
+
+def _get_loc(address, box_width, cell_capacity):
+    pos = list(getposition(address))
+    n = pos.pop()
+    dim = int(box_width)
+    total = int(cell_capacity)
+    length = max(dim, total / dim)
+    c = chr(65 + ((n - 1) / length))
+    x = n % length or length
+    pos.append("%s%02d" % (c, x))
+    containers = ('Shelf', 'Rack', 'Drawer', 'Box', 'Cell')
+    return ' '.join(map(lambda x: ' '.join(x), zip(containers, map(str, pos))))
+
+
+def freezer_view_helper(freezer_id):
+    """
+    Function to facilitate viewing freezer layout in the template
+    """
+    master = []
+    c = connection.cursor()
+    c.execute("""SELECT box_addr, name FROM freezers_boxname WHERE
+                 freezer_id = %s""", (freezer_id,))
+    names = dict(c.fetchall())
+    c.execute("""SELECT address FROM freezers_samplelocation WHERE
+                 freezer_id = %s AND occupied IS NOT NULL""", (freezer_id,))
+    freezer = [map(int, (r, s, d, b)) for r, s, d, b, cell in
+               [getposition(address[0]) for address in c.fetchall()]
+               if cell == 1]
+    for shelf in sorted(set(s for (s, r, d, b) in freezer)):
+        rack_list = []
+        for rack in _freezer_filter(freezer, shelf):
+            drawer_list = []
+            for drawer in _freezer_filter(freezer, shelf, rack):
+                box_list = []
+                for box in _freezer_filter(freezer, shelf, rack, drawer):
+                    traddr = (shelf << 24) + (rack << 16) + (drawer << 8) + box
+                    box_list.append(FreezerHelper(box, names.get(traddr, '')))
+                drawer_item = FreezerHelper(drawer, box_list)
+                drawer_list.append(drawer_item)
+            rack_item = FreezerHelper(rack, drawer_list)
+            rack_list.append(rack_item)
+        shelf_item = FreezerHelper(shelf, rack_list)
+        master.append(shelf_item)
+    return master
+
+
+def get_box_context(freezer_id, shelf_id, rack_id, drawer_id, box_id,
+                    url_suffix, url_prefix='freezers'):
+    """
+    Used with location helper to provide box information to template.
+    """
     # Get Sample locations for this box
     this_box = getaddress(map(int, (shelf_id, rack_id, drawer_id, box_id, 1)))
     next_box = this_box + 0x0100
@@ -139,7 +188,7 @@ def getBoxContext(freezer_id, shelf_id, rack_id, drawer_id, box_id,
     return context
 
 
-def getSampleAliquots(s):
+def get_sample_aliquots(s):
     s_aliquot_number = s.aliquot_number
     samples = [s]
     sa = SampleLocation.objects.filter(freezer=s.freezer.id,
@@ -154,9 +203,9 @@ def getSampleAliquots(s):
     return samples
 
 
-def getMoveSampleDisplay(s, samples=None):
+def get_move_sample_display(s, samples=None):
     if not samples:
-        samples = getSampleAliquots(s)
+        samples = get_sample_aliquots(s)
     bw = s.box_width
     cap = s.cell_capacity
     width = max(bw, cap / bw)
@@ -179,7 +228,7 @@ def getMoveSampleDisplay(s, samples=None):
     return context
 
 
-def getSampleList(index, fsl, nsamples):
+def get_sample_list(index, fsl, nsamples):
     fsl = fsl.extra(order_by=['address'])
     sample_list = [fsl[index]]
     try:
@@ -193,51 +242,30 @@ def getSampleList(index, fsl, nsamples):
             elif pp[3] + 1 == cp[3] and pp[4] == prev.cell_capacity and cp[4] == 1:
                 sample_list.append(current)
             else:
-                return getSampleList(index + i + 1, fsl, nsamples)
+                return get_sample_list(index + i + 1, fsl, nsamples)
         return sample_list
     except IndexError:
         return []
 
 
-def remodelFreezerHelper(field_to_change, new_value, fid, sid, rid=None,
-                         did=None, bid=None, box_dim=None):
+def remodel_freezer_helper(field_to_change, new_value, fid, sid, rid=None,
+                           did=None, bid=None, box_dim=None):
+    """
+    Simplifies view interface to change freezer layout.
+    """
     l = locals()
     del l['field_to_change']
     args = dict([(k, v) for k, v in l.iteritems() if v])
     case = {
-        'new_rack_capacity': remodel_racks_in_freezer_subsection,
-        'new_drawer_capacity': remodel_drawers_in_freezer_subsection,
-        'new_box_capacity': remodel_boxes_in_freezer_subsection,
-        'new_cell_capacity': remodel_cells_in_freezer_subsection,
+        'new_rack_capacity': rh.remodel_racks_in_freezer_subsection,
+        'new_drawer_capacity': rh.remodel_drawers_in_freezer_subsection,
+        'new_box_capacity': rh.remodel_boxes_in_freezer_subsection,
+        'new_cell_capacity': rh.remodel_cells_in_freezer_subsection,
     }
     return case[field_to_change](**args)
 
 
-class AbbrLocation:
-    def __init__(self, freezer_id, addr):
-        self.fid = freezer_id
-        self.traddr = addr
-        self.sid = (addr >> 24) & 0xFF
-        self.rid = (addr >> 16) & 0xFF
-        self.did = (addr >> 8) & 0xFF
-        self.bid = addr & 0xFF
-        self.name = self.get_box_name()
-
-    def location(self):
-        fname = Freezer.objects.get(pk=self.fid).__unicode__()
-        return "%s Shelf %d Rack %d Drawer %d Box %d" % (fname, self.sid,
-                                                         self.rid, self.did,
-                                                         self.bid)
-
-    def get_box_name(self):
-        try:
-            bn = BoxName.objects.get(freezer=self.fid, box_addr=self.traddr)
-            return bn.name
-        except:
-            return ''
-
-
-def searchHelper(s, query):
+def search_helper(s, query):
     """
     Further filter a list of sample/removed sample objects.
 
@@ -324,20 +352,10 @@ def searchHelper(s, query):
     return sorted(results, key=lambda x: x.id)
 
 
-def _get_loc(address, box_width, cell_capacity):
-    pos = list(getposition(address))
-    n = pos.pop()
-    dim = int(box_width)
-    total = int(cell_capacity)
-    length = max(dim, total / dim)
-    c = chr(65 + ((n - 1) / length))
-    x = n % length or length
-    pos.append("%s%02d" % (c, x))
-    containers = ('Shelf', 'Rack', 'Drawer', 'Box', 'Cell')
-    return ' '.join(map(lambda x: ' '.join(x), zip(containers, map(str, pos))))
-
-
-def exportSampleHelper(user):
+def export_sample_helper(user):
+    """
+    Export users sample information to file.
+    """
     dirname = os.path.join(MEDIA_ROOT, user.username)
     if not os.path.isdir(dirname):
         os.mkdir(dirname)
@@ -377,7 +395,7 @@ def exportSampleHelper(user):
     f.close()
 
 
-def getUserFiles(user):
+def get_user_files(user):
     dirname = os.path.join(MEDIA_ROOT, user.username)
     if os.path.isdir(dirname):
         files = [dict(zip(('url', 'filename'),
