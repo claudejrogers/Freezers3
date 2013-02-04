@@ -1,12 +1,26 @@
-{% extends "base.html" %}
-
-{% block title %}Error 500: Internal Server Error{% endblock %}
-
-{% block header %}Error 500: Internal Server Error{% endblock %}
-
-{% block content %}
-  <p>
-  A server error occurred.  Please contact the administrator.
-  Go <a href={% url Freezers3.views.root_view %}>home</a>.
-  </p>
-{% endblock %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Freezer Inventory | Error 500: Server Error</title>
+    <link href="/static/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 30px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+    </style>
+    <link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
+    <link href="/static/css/docs.css" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <header class="jumbotron masthead" id="overview">
+        <h1>Error 500: Server Error</h1>
+      </header>
+        <p>
+          A server error occured.
+          Contact the administrator.
+          Go <a href={% url freezers.views.home_link %}>home</a>.
+        </p>
+    </div>
+  </body>
+</html>

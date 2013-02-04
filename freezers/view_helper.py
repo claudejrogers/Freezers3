@@ -419,6 +419,21 @@ def get_box_name_or_empty_string(fid, sid, rid, did, bid):
     return bn
 
 
+def get_redirect_url(freezer_id, containers, prefix=None, suffix=None,
+                     include_cell=False):
+    if len(containers) == 5 and not include_cell:
+        containers = containers[:4]
+    link = ['']
+    if prefix:
+        link.append(prefix)
+    link.append(str(freezer_id))
+    link += map(str, containers)
+    if suffix:
+        link.append(suffix)
+    link.append('')
+    return '/'.join(link)
+
+
 def log_dict(adict):
     s = "\t{\n"
     for k, v in adict.iteritems():

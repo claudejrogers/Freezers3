@@ -8,6 +8,7 @@ from django.core.paginator import Paginator, InvalidPage, EmptyPage
 from freezers.models import *
 from freezers.forms import *
 from freezers.view_helper import *
+from freezers.utilities import get_bounding_addresses
 
 
 @login_required
@@ -106,12 +107,13 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
     Allow user to add sample to any free location in the freezer
     """
     # get items for template context
-    containers = [c for c in (freezer_id, shelf_id, rack_id, drawer_id,
-                              box_id) if c]
+    containers = [int(c) for c in (shelf_id, rack_id, drawer_id, box_id,
+                                   cell_id) if c]
     f = get_object_or_404(Freezer, pk=freezer_id)
     fname = f.__unicode__()
-    c = dict(zip(('fid', 'sid', 'rid', 'did', 'bid'), containers))
+    c = dict(zip(('sid', 'rid', 'did', 'bid'), containers))
     c.update({'fname': fname,
+              'fid': freezer_id,
               'request': request})
 
     if box_id:  # display box
@@ -126,15 +128,8 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
     if request.method == 'POST':
         form = AddSampleForm(request.POST)
         if form.is_valid():
-            start_pos = [int(con or 1) for con in (shelf_id, rack_id,
-                                                   drawer_id, box_id,
-                                                   cell_id)]
-            end_pos = list(start_pos)
-            offset = len(containers) - 2 if len(containers) > 1 else 0
-            end_pos[offset] += f.shelf_capacity if len(containers) == 1 else 1
-            faddress = getaddress(start_pos)
-            laddress = getaddress(end_pos)
-
+            faddress, laddress = get_bounding_addresses(containers)
+            # get samples between bounds
             fsl = SampleLocation.objects.filter(freezer=freezer_id,
                                                 occupied=False,
                                                 address__gte=faddress,
@@ -147,12 +142,11 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
                        location." % len(fsl)
                 form = AddSampleForm()
                 c.update({'form': form, 'msg': msg})
-                url = "/freezers/"
-                for container in containers:
-                    url += container + '/'
-                if cell_id:
-                    url += cell_id + '/'
-                c['url'] = url + "add-samples/"
+                url = get_redirect_url(
+                    freezer_id, containers, prefix="freezers",
+                    suffix="add-samples", include_cell=True
+                )
+                c['url'] = url
                 return render(request, 'freezers/add_samples_to_freezer.html',
                               c)
             first_address = smp_lst[0].address
@@ -180,10 +174,10 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
                 concentration=form.cleaned_data['concentration'],
                 volume=form.cleaned_data['volume'],
                 comments=form.cleaned_data['comments'])
-            redirect_url = "/freezers/"
-            for container in containers:
-                redirect_url += container + '/'
-            redirect_url += 'samples/' if len(containers) < 5 else ''
+            redirect_url = get_redirect_url(
+                freezer_id, containers, prefix="freezers",
+                suffix="samples" if not cell_id else None
+            )
             # Log whenever a user adds a sample
             log_action(
                 request.user.username,
@@ -195,12 +189,9 @@ def add_samples_to_freezer(request, freezer_id, shelf_id=None, rack_id=None,
     else:
         form = AddSampleForm()
     c['form'] = form
-    url = "/freezers/"
-    for container in containers:
-        url += container + '/'
-    if cell_id:
-        url += cell_id + '/'
-    c['url'] = url + "add-samples/"
+    url = get_redirect_url(freezer_id, containers, prefix="freezers",
+                           suffix="add-samples", include_cell=True)
+    c['url'] = url
     return render(request, 'freezers/add_samples_to_freezer.html', c)
 
 
@@ -214,13 +205,8 @@ def sample_index_by_location(request, freezer_id, shelf_id=None,
     msg, querystring = '', ''
     f = get_object_or_404(Freezer, pk=freezer_id)
     fname = f.__unicode__()
-    containers = [c for c in (shelf_id, rack_id, drawer_id) if c]
-    start_pos = [int(c or 1) for c in (shelf_id, rack_id, drawer_id, 1,
-                                       1)]
-    first_address = getaddress(start_pos)
-    end_pos = list(start_pos)
-    end_pos[len(containers) - 1 if containers else 0] += 1
-    end_address = getaddress(end_pos)
+    containers = [int(c) for c in (shelf_id, rack_id, drawer_id) if c]
+    first_address, end_address = get_bounding_addresses(containers)
     if containers:
         s = SampleLocation.objects.filter(freezer=freezer_id,
                                           occupied=True,
@@ -240,10 +226,8 @@ def sample_index_by_location(request, freezer_id, shelf_id=None,
     else:
         sample_list = s
     if request.method == 'POST':
-        redirect_url = '/freezers/%s/' % freezer_id
-        if containers:
-            redirect_url += '/'.join(containers) + '/'
-        redirect_url += 'samples/'
+        redirect_url = get_redirect_url(freezer_id, containers,
+                                        prefix='freezers', suffix='samples')
         form = SimpleSearchForm(request.POST)
         if form.is_valid():
             query = form.cleaned_data['search'].strip()
@@ -631,22 +615,11 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
             'atoa': atoa
         })
         return render(request, 'freezers/move_sample_in_box.html', c)
-    containers = [c for c in (shelf_id, rack_id, drawer_id,
-                              box_id, cell_id) if c]
-    start_pos = [int(x or 1) for x in (shelf_id, rack_id, drawer_id, box_id,
-                                       cell_id)]
-    first_address = getaddress(start_pos)
-    end_pos = list(start_pos)
-    index = len(containers) - 1 if containers else 0
-    if index > 3:
-        # If a box is selected, the range should extend to the end of the box
-        end_pos[3] += 1
-        end_pos[4] = 1
-    elif containers:
-        end_pos[index] += 1
-    else:  # move to anywhere in freezer
-        end_pos[index] += f.shelf_capacity
-    end_address = getaddress(end_pos)
+    containers = [int(c) for c in (shelf_id, rack_id, drawer_id,
+                                   box_id, cell_id) if c]
+    first_address, end_address = get_bounding_addresses(
+        containers, adjust_by=1 if containers else f.shelf_capacity + 1
+    )
     fll = SampleLocation.objects.filter(freezer=freezer_id,
                                         occupied=False,
                                         address__gte=first_address,
@@ -678,13 +651,8 @@ def move_sample(request, sample_id, freezer_id, shelf_id=None, rack_id=None,
         return render(request, 'freezers/move_sample.html', c)
     for i, samp in enumerate(samples):
         samp.move(loc_list[i])
-    redirect_url = '/freezers/%s/' % freezer_id
-    if len(containers) == 5:
-        containers = containers[:4]
-    for container in containers:
-        redirect_url += container + '/'
-    if not box_id:
-        redirect_url += 'samples/'
+    redirect_url = get_redirect_url(freezer_id, containers, prefix='freezers',
+                                    suffix='samples' if not box_id else None)
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1003,12 +971,14 @@ def removed_index(request, query=None):
         res = paginator.page(page)
     except (EmptyPage, InvalidPage):
         res = paginator.page(paginator.num_pages)
-    c = {'request': request,
-         'return_code': return_code,
-         'form': form,
-         'msg': msg,
-         'query': query,
-         'results': res}
+    c = {
+        'request': request,
+        'return_code': return_code,
+        'form': form,
+        'msg': msg,
+        'query': query,
+        'results': res
+    }
     return render(request, 'freezers/removed_index.html', c)
 
 
@@ -1055,8 +1025,8 @@ def homepage(request, user_id):
     files, has_text = get_user_files(user)
     cur = connection.cursor()
     cur.execute("""SELECT freezer_id, address
-                         FROM freezers_samplelocation
-                         WHERE user_id = %s""", (user_id,))
+                   FROM freezers_samplelocation
+                   WHERE user_id = %s""", (user_id,))
     sl = cur.fetchall()
     sls = sorted(set((a, b >> 8) for (a, b) in sl))
     locs = [AbbrLocation(*tup) for tup in sls]
@@ -1165,10 +1135,9 @@ def swap_samples(request, sample_id, cell_id):
     s = get_object_or_404(SampleLocation, pk=sample_id)
     fid = s.freezer.id
     ad = s.address
-    sh, ra, dr, bo, ce = getposition(ad)
-    redirect_url = '/freezers/%d/%d/%d/%d/%d/rearrange-samples/' % (
-        fid, sh, ra, dr, bo
-    )
+    containers = getposition(ad)
+    redirect_url = get_redirect_url(fid, containers, prefix='freezers',
+                                    suffix='rearrange-samples')
     address = ad >> 8
     addr = (address << 8) + int(cell_id)
     o = SampleLocation.objects.filter(freezer=fid,
@@ -1184,10 +1153,9 @@ def remove_sample(request, sample_id):
     s = get_object_or_404(SampleLocation, pk=sample_id)
     fid = s.freezer.id
     ad = s.address
-    sh, ra, dr, bo, ce = getposition(ad)
-    redirect_url = '/freezers/%d/%d/%d/%d/%d/rearrange-samples/' % (
-        fid, sh, ra, dr, bo
-    )
+    containers = getposition(ad)
+    redirect_url = get_redirect_url(fid, containers, prefix='freezers',
+                                    suffix='rearrange-samples')
     name = s.name,
     aliquot = s.aliquot_number
     s.remove_sample()
@@ -1347,13 +1315,8 @@ def move_selection(request, freezer_id, shelf_id=None, rack_id=None,
         return render(request, 'freezers/move_sample.html', c)
     for i, samp in enumerate(samples):
         samp.move(loc_list[i])
-    redirect_url = '/freezers/%s/' % freezer_id
-    if len(containers) == 5:
-        containers = containers[:4]
-    for container in containers:
-        redirect_url += container + '/'
-    if not box_id:
-        redirect_url += 'samples/'
+    redirect_url = get_redirect_url(freezer_id, containers, prefix='freezers',
+                                    suffix='samples' if not box_id else None)
     return HttpResponseRedirect(redirect_url)
 
 
@@ -1517,10 +1480,10 @@ def remove_freezer(request, freezer_id):
 
 @login_required
 def show_box(request, freezer_id, address):
-    s, r, d, b, c = getposition(int(address))
-    return HttpResponseRedirect('/freezers/%s/%d/%d/%d/%d/' % (
-        freezer_id, s, r, d, b
-    ))
+    containers = getposition(int(address))
+    return HttpResponseRedirect(
+        get_redirect_url(freezer_id, containers, prefix='freezers')
+    )
 
 
 @login_required
@@ -1576,8 +1539,8 @@ def return_removed_sample(request, removed_id):
     }
     sl.addsample(**kwargs)
     fid = sl.freezer.id
-    s, r, d, b, c = getposition(sl.address)
-    rs.delete
+    containers = getposition(sl.address)
+    rs.delete()
     # Log when user returns samples
     log_action(
         request.user.username,
@@ -1589,6 +1552,5 @@ def return_removed_sample(request, removed_id):
             "address": hex(sl.address)
         }
     )
-    return HttpResponseRedirect(
-        '/freezers/%d/%d/%d/%d/%d/' % (fid, s, r, d, b)
-    )
+    redirect_link = get_redirect_url(fid, containers, prefix='freezers')
+    return HttpResponseRedirect(redirect_link)
