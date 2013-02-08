@@ -34,7 +34,7 @@
     </div>
     <dl class="dl-horizontal">
       <dt>Contact</dt><dd>{{ supp.first_name }} {{ supp.last_name }}</dd>
-      <dt>Contact Email</dt><dd>{{ supp.email }}</dd>
+      <dt>Contact Email</dt><dd>{% if supp.email %}{{ supp.email }}{% else %}Not provided{% endif %}</dd>
       <dt>PI/Lab/Supplier</dt><dd>{{ supp.pi_lab_supplier }}</dd>
       <dt>Organization</dt><dd>{{ supp.organization }}</dd>
     </dl>
