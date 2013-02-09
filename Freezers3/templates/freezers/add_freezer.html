@@ -5,30 +5,40 @@
 {% block header %}Add Freezer{% endblock %}
 
 {% block content %}
-<form class="form-horizontal" method="post" 
-      action={% url freezers.views.add_freezer %}>
-  {% csrf_token %}
-  <fieldset>
-    {% for field in form %}
-      <div class="control-group">
-        {% if field.errors %}
-          <div class="alert alert-error">
-            {{ field.errors }}
+{% if request.user.is_superuser %}
+  <form class="form-horizontal" method="post" 
+        action={% url freezers.views.add_freezer %}>
+    {% csrf_token %}
+    <fieldset>
+      {% for field in form %}
+        <div class="control-group">
+          {% if field.errors %}
+            <div class="alert alert-error">
+              {{ field.errors }}
+            </div>
+          {% endif %}
+          <label class="control-label" for="id_{{ field.name }}">
+            {{ field.label }}
+          </label>
+          <div class="controls">
+            {{ field }}
+            <span class="help-inline">{{ field.help_text }}</span>
           </div>
-        {% endif %}
-        <label class="control-label" for="id_{{ field.name }}">
-          {{ field.label }}
-        </label>
-        <div class="controls">
-          {{ field }}
-          <span class="help-inline">{{ field.help_text }}</span>
         </div>
+      {% endfor %}
+      <div class="controls">
+        <p>&#42; Required field</p>
+        <input class="btn btn-primary" type="submit" value="Add Freezer" />
       </div>
-    {% endfor %}
-    <div class="controls">
-      <p>&#42; Required field</p>
-      <input class="btn btn-primary" type="submit" value="Add Freezer" />
+    </fieldset>
+  </form>
+{% else %}
+  <div class-"span8">
+    <div class="alert alert-info">
+      <p>
+        Contact administrator to add a new freezer.
+      </p>
     </div>
-  </fieldset>
-</form>
+  </div>
+{% endif %}
 {% endblock %}

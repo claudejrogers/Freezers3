@@ -85,12 +85,14 @@
                title="Click to edit this freezer">
               <i class="icon-edit"></i>
             </a>
-            <a class="btn btn-danger btn-mini kill-freezer"
-               href="#modal{{ f.id }}"
-               data-toggle="modal"
-               title="Remove this freezer">
-              <i class="icon-trash icon-white"></i>
-            </a>
+            {% if request.user.is_superuser %}
+              <a class="btn btn-danger btn-mini kill-freezer"
+                 href="#modal{{ f.id }}"
+                 data-toggle="modal"
+                 title="Remove this freezer">
+                <i class="icon-trash icon-white"></i>
+              </a>
+            {% endif %}
           </td>
         </tr>
         <script src="/static/js/drawSampleLocations.js"></script>
@@ -100,23 +102,27 @@
           drawProgressBar(free, idno);
         </script>
         {% endfor %}
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td></td>
-        <td>
-          <a class="btn btn-mini"
-             href={% url freezers.views.add_freezer %}
-             title="Add new freezer">
-            <i class="icon-plus-sign"></i>
-          </a>
-        </td>
+        {% if request.user.is_superuser %}
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+              <a class="btn btn-mini"
+                 href={% url freezers.views.add_freezer %}
+                 title="Add new freezer">
+                <i class="icon-plus-sign"></i>
+              </a>
+            </td>
+          </tr>
+        {% endif %}
       </tbody>
     </table>
     {% for f in freezer_list %}

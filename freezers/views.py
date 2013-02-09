@@ -476,6 +476,7 @@ def edit_sample(request, sample_id):
         form = EditSampleForm(request.POST, instance=s)
         msgform = MessageForm(request.POST)
         if form.is_valid():
+            i = 1
             if form.cleaned_data['apply_to_aliquots']:
                 r, sh, d, b, c = getposition(s.address)
                 next_address = getaddress((r, sh, d + 2, 1, 1))
@@ -814,7 +815,6 @@ def search(request, option=None, query=None):
         form = HeaderSearchForm(request.POST)
         redirect_url = '/freezers/search/'
         if form.is_valid():
-            print "Is VALID!!!!"
             query = form.cleaned_data['header_search'].strip()
             redirect_url += '?query=%s' % query.replace(' ', '+')
             return HttpResponseRedirect(redirect_url)
@@ -839,7 +839,6 @@ def search(request, option=None, query=None):
         else:
             msg = "Query resulted in no hits!"
             c['msg'] = msg
-            print msg
     if querystring:
         c['querystring'] = querystring
     return render(request, 'freezers/search_samples.html', c)
