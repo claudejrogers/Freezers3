@@ -1,0 +1,7 @@
+Django==1.4.3
+South==0.7.6
+gunicorn==0.17.2
+ipython==0.13.1
+jedi==0.5b5
+psycopg2==2.4.6
+wsgiref==0.1.2

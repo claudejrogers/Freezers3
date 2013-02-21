@@ -1,9 +1,6 @@
 # Freezer Inventory
 
-Freezer inventory software.
+Opinionated freezer inventory software.
 
-## Dependencies
-
-- Django 1.4
-- Bootstrap
-
+Assumes freezers contain shelves, shelves contain racks, racks contain drawers,
+drawers contain boxes, boxes contain samples.
