@@ -4,6 +4,7 @@ import os
 PROJECT_SETTINGS_PATH = os.path.dirname(__file__)
 PROJECT_ROOT = os.path.abspath(os.path.join(PROJECT_SETTINGS_PATH, '..'))
 
+
 def root(*args):
     return os.path.abspath(os.path.join(PROJECT_ROOT, *args))
 
@@ -133,6 +134,7 @@ INSTALLED_APPS = (
     'django.contrib.admin',
     # Uncomment the next line to enable admin documentation:
     # 'django.contrib.admindocs',
+    'south',
     'freezers',
 )
 

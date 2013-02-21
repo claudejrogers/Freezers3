@@ -5,4 +5,5 @@
 *.DS_Store
 *.ropeproject
 */resources/*
+freezers/migrations
 fabfile.py
